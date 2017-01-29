@@ -95,13 +95,13 @@
 
 */
 
-/*global modules, CommandBlockMorph, SpriteMorph, TemplateSlotMorph,
+/*global modules, CommandBlockMorph, Sprite, TemplateSlotMorph,
 StringMorph, Color, DialogBoxMorph, ScriptsMorph, ScrollFrameMorph,
 Point, HandleMorph, HatBlockMorph, BlockMorph, detect, List, Process,
 AlignmentMorph, ToggleMorph, InputFieldMorph, ReporterBlockMorph,
 StringMorph, nop, newCanvas, radians, BoxMorph, ArrowMorph, PushButtonMorph,
 contains, InputSlotMorph, ToggleButtonMorph, IDE_Morph, MenuMorph, copy,
-ToggleElementMorph, Morph, fontHeight, StageMorph, SyntaxElementMorph,
+ToggleElementMorph, Morph, fontHeight, Stage, SyntaxElementMorph,
 SnapSerializer, CommentMorph, localize, CSlotMorph, MorphicPreferences,
 SymbolMorph, isNil, CursorMorph, VariableFrame, WatcherMorph, Variable,
 BooleanSlotMorph*/
@@ -830,7 +830,7 @@ CustomCommandBlockMorph.prototype.userMenu = function () {
         menu;
 
    function monitor(vName) {
-        var stage = rcvr.parentThatIsA(StageMorph),
+        var stage = rcvr.parentThatIsA(Stage),
             varFrame = myself.variables;
         menu.addItem(
             vName + '...',
@@ -851,7 +851,7 @@ CustomCommandBlockMorph.prototype.userMenu = function () {
                 }
                 watcher = new WatcherMorph(
                     vName + ' ' + localize('(temporary)'),
-                    SpriteMorph.prototype.blockColor.variables,
+                    Sprite.prototype.blockColor.variables,
                     varFrame,
                     vName
                 );
@@ -957,7 +957,7 @@ CustomCommandBlockMorph.prototype.deleteBlockDefinition = function () {
             rcvr = myself.receiver();
             rcvr.deleteAllBlockInstances(myself.definition);
             if (myself.definition.isGlobal) {
-                stage = rcvr.parentThatIsA(StageMorph);
+                stage = rcvr.parentThatIsA(Stage);
                 idx = stage.globalBlocks.indexOf(myself.definition);
                 if (idx !== -1) {
                     stage.globalBlocks.splice(idx, 1);
@@ -1012,7 +1012,7 @@ CustomCommandBlockMorph.prototype.relabel = function (alternatives) {
 
 CustomCommandBlockMorph.prototype.alternatives = function () {
     var rcvr = this.receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         allDefs = rcvr.customBlocks.concat(stage.globalBlocks),
         myself = this;
     return allDefs.filter(function (each) {
@@ -1350,7 +1350,7 @@ BlockDialogMorph.prototype.init = function (target, action, environment) {
     this.add(this.scopes);
 
     this.categories = new BoxMorph();
-    this.categories.color = SpriteMorph.prototype.paletteColor.lighter(8);
+    this.categories.color = Sprite.prototype.paletteColor.lighter(8);
     this.categories.borderColor = this.categories.color.lighter(40);
     this.createCategoryButtons();
     this.fixCategoriesLayout();
@@ -1369,7 +1369,7 @@ BlockDialogMorph.prototype.openForChange = function (
     pic,
     preventTypeChange // <bool>
 ) {
-    var clr = SpriteMorph.prototype.blockColor[category];
+    var clr = Sprite.prototype.blockColor[category];
     this.key = 'changeABlock';
     this.category = category;
     this.blockType = type;
@@ -1405,7 +1405,7 @@ BlockDialogMorph.prototype.createCategoryButtons = function () {
         oldFlag = Morph.prototype.trackChanges;
 
     Morph.prototype.trackChanges = false;
-    SpriteMorph.prototype.categories.forEach(function (cat) {
+    Sprite.prototype.categories.forEach(function (cat) {
         myself.addCategoryButton(cat);
     });
     Morph.prototype.trackChanges = oldFlag;
@@ -1415,9 +1415,9 @@ BlockDialogMorph.prototype.addCategoryButton = function (category) {
     var labelWidth = 75,
         myself = this,
         colors = [
-            SpriteMorph.prototype.paletteColor,
-            SpriteMorph.prototype.paletteColor.darker(50),
-            SpriteMorph.prototype.blockColor[category]
+            Sprite.prototype.paletteColor,
+            Sprite.prototype.paletteColor.darker(50),
+            Sprite.prototype.blockColor[category]
         ],
         button;
 
@@ -1502,7 +1502,7 @@ BlockDialogMorph.prototype.fixCategoriesLayout = function () {
 BlockDialogMorph.prototype.createTypeButtons = function () {
     var block,
         myself = this,
-        clr = SpriteMorph.prototype.blockColor[this.category];
+        clr = Sprite.prototype.blockColor[this.category];
 
 
     block = new CommandBlockMorph();
@@ -1640,7 +1640,7 @@ BlockDialogMorph.prototype.getInput = function () {
     if (def.type === 'reporter' || def.type === 'predicate') {
         body = Process.prototype.reify.call(
             null,
-            SpriteMorph.prototype.blockForSelector('doReport'),
+            Sprite.prototype.blockForSelector('doReport'),
             new List(),
             true // ignore empty slots for custom block reification
         );
@@ -2156,7 +2156,7 @@ PrototypeHatBlockMorph.prototype.init = function (definition) {
 
     // init inherited stuff
     HatBlockMorph.uber.init.call(this);
-    this.color = SpriteMorph.prototype.blockColor.control;
+    this.color = Sprite.prototype.blockColor.control;
     this.category = 'control';
     this.add(proto);
     if (definition.variableNames.length) {
@@ -2208,7 +2208,7 @@ PrototypeHatBlockMorph.prototype.fixBlockColor = function (
             this.alternateBlockColor();
         }
     } else if (this.category && !this.color.eq(
-            SpriteMorph.prototype.blockColor[this.category]
+            Sprite.prototype.blockColor[this.category]
         )) {
         this.alternateBlockColor();
     }
@@ -2749,7 +2749,7 @@ InputSlotDialogMorph.prototype.createTypeButtons = function () {
     var block,
         arrow,
         myself = this,
-        clr = SpriteMorph.prototype.blockColor[this.category];
+        clr = Sprite.prototype.blockColor[this.category];
 
 
     block = new JaggedBlockMorph(localize('Title text'));
@@ -3483,9 +3483,9 @@ BlockExportDialogMorph.prototype.buildContents = function () {
     palette = new ScrollFrameMorph(
         null,
         null,
-        SpriteMorph.prototype.sliderColor
+        Sprite.prototype.sliderColor
     );
-    palette.color = SpriteMorph.prototype.paletteColor;
+    palette.color = Sprite.prototype.paletteColor;
     palette.padding = padding;
     palette.isDraggable = false;
     palette.acceptsDrops = false;
@@ -3494,7 +3494,7 @@ BlockExportDialogMorph.prototype.buildContents = function () {
     // populate palette
     x = palette.left() + padding;
     y = palette.top() + padding;
-    SpriteMorph.prototype.categories.forEach(function (category) {
+    Sprite.prototype.categories.forEach(function (category) {
         myself.blocks.forEach(function (definition) {
             if (definition.category === category) {
                 if (lastCat && (category !== lastCat)) {

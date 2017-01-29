@@ -66,7 +66,7 @@
 
 /*global modules, Point, newCanvas, Morph, fontHeight, SliderMorph, List,
 MorphicPreferences, FrameMorph, HandleMorph, DialogBoxMorph, isString,
-SpriteMorph, Context, Costume, ArgMorph, BlockEditorMorph,
+Sprite, Context, Costume, ArgMorph, BlockEditorMorph,
 SyntaxElementMorph, MenuMorph, SpriteBubbleMorph, SpeechBubbleMorph,
 CellMorph, ListWatcherMorph, isNil, BoxMorph, Variable, isSnapObject*/
 
@@ -387,7 +387,7 @@ TableCellMorph.prototype.dataRepresentation = function (dta) {
     } else if (typeof dta === 'number') {
         return dta.toString();
     } else if (typeof dta === 'boolean') {
-        return SpriteMorph.prototype.booleanMorph.call(
+        return Sprite.prototype.booleanMorph.call(
             null,
             dta
         ).fullImage();

@@ -57,7 +57,7 @@
 // Global settings /////////////////////////////////////////////////////
 
 /*global modules, BoxMorph, HandleMorph, PushButtonMorph, SyntaxElementMorph,
-Color, Point, WatcherMorph, StringMorph, SpriteMorph, ScrollFrameMorph,
+Color, Point, WatcherMorph, StringMorph, Sprite, ScrollFrameMorph,
 CellMorph, ArrowMorph, MenuMorph, snapEquals, Morph, isNil, localize,
 MorphicPreferences, TableDialogMorph, SpriteBubbleMorph, SpeechBubbleMorph,
 TableFrameMorph, TableMorph, Variable, isSnapObject*/
@@ -462,7 +462,7 @@ ListWatcherMorph.uber = BoxMorph.prototype;
 // ListWatcherMorph default settings
 
 ListWatcherMorph.prototype.cellColor =
-    SpriteMorph.prototype.blockColor.lists;
+    Sprite.prototype.blockColor.lists;
 
 // ListWatcherMorph instance creation:
 

@@ -66,10 +66,10 @@
 */
 
 /*global Point, Rectangle, DialogBoxMorph, AlignmentMorph, PushButtonMorph,
-Color, SymbolMorph, newCanvas, Morph, TextMorph, Costume, SpriteMorph, nop,
+Color, SymbolMorph, newCanvas, Morph, TextMorph, Costume, Sprite, nop,
 localize, InputFieldMorph, SliderMorph, ToggleMorph, ToggleButtonMorph,
 BoxMorph, modules, radians, MorphicPreferences, getDocumentPositionOf,
-StageMorph, isNil*/
+Stage, isNil*/
 
 // Global stuff ////////////////////////////////////////////////////////
 
@@ -115,7 +115,7 @@ PaintEditorMorph.prototype.buildContents = function () {
     var myself = this;
 
     this.paper = new PaintCanvasMorph(function () {return myself.shift; });
-    this.paper.setExtent(StageMorph.prototype.dimensions);
+    this.paper.setExtent(Stage.prototype.dimensions);
 
     this.addBody(new AlignmentMorph('row', this.padding));
     this.controls = new AlignmentMorph('column', this.padding / 2);
@@ -131,7 +131,7 @@ PaintEditorMorph.prototype.buildContents = function () {
     this.body.add(this.paper);
 
     this.toolbox = new BoxMorph();
-    this.toolbox.color = SpriteMorph.prototype.paletteColor.lighter(8);
+    this.toolbox.color = Sprite.prototype.paletteColor.lighter(8);
     this.toolbox.borderColor = this.toolbox.color.lighter(40);
     if (MorphicPreferences.isFlat) {
         this.toolbox.edge = 0;

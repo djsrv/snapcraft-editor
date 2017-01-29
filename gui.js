@@ -57,10 +57,10 @@
 
 */
 
-/*global modules, Morph, SpriteMorph, SyntaxElementMorph, Color,
+/*global modules, Morph, Sprite, SyntaxElementMorph, Color,
 ListWatcherMorph, TextMorph, newCanvas, useBlurredShadows, VariableFrame,
 StringMorph, Point, MenuMorph, morphicVersion, DialogBoxMorph,
-ToggleButtonMorph, contains, ScrollFrameMorph, StageMorph, PushButtonMorph,
+ToggleButtonMorph, contains, ScrollFrameMorph, Stage, PushButtonMorph,
 InputFieldMorph, FrameMorph, Process, nop, SnapSerializer, ListMorph, detect,
 AlignmentMorph, TabMorph, Costume, MorphicPreferences, Sound, BlockMorph,
 ToggleMorph, InputSlotDialogMorph, ScriptsMorph, isNil, SymbolMorph,
@@ -104,21 +104,21 @@ IDE_Morph.uber = Morph.prototype;
 
 IDE_Morph.prototype.setDefaultDesign = function () {
     MorphicPreferences.isFlat = false;
-    SpriteMorph.prototype.paletteColor = new Color(55, 55, 55);
-    SpriteMorph.prototype.paletteTextColor = new Color(230, 230, 230);
-    StageMorph.prototype.paletteTextColor
-        = SpriteMorph.prototype.paletteTextColor;
-    StageMorph.prototype.paletteColor = SpriteMorph.prototype.paletteColor;
-    SpriteMorph.prototype.sliderColor
-        = SpriteMorph.prototype.paletteColor.lighter(30);
+    Sprite.prototype.paletteColor = new Color(55, 55, 55);
+    Sprite.prototype.paletteTextColor = new Color(230, 230, 230);
+    Stage.prototype.paletteTextColor
+        = Sprite.prototype.paletteTextColor;
+    Stage.prototype.paletteColor = Sprite.prototype.paletteColor;
+    Sprite.prototype.sliderColor
+        = Sprite.prototype.paletteColor.lighter(30);
 
     IDE_Morph.prototype.buttonContrast = 30;
     IDE_Morph.prototype.backgroundColor = new Color(40, 40, 40);
-    IDE_Morph.prototype.frameColor = SpriteMorph.prototype.paletteColor;
+    IDE_Morph.prototype.frameColor = Sprite.prototype.paletteColor;
 
     IDE_Morph.prototype.groupColor
-        = SpriteMorph.prototype.paletteColor.lighter(8);
-    IDE_Morph.prototype.sliderColor = SpriteMorph.prototype.sliderColor;
+        = Sprite.prototype.paletteColor.lighter(8);
+    IDE_Morph.prototype.sliderColor = Sprite.prototype.sliderColor;
     IDE_Morph.prototype.buttonLabelColor = new Color(255, 255, 255);
     IDE_Morph.prototype.tabColors = [
         IDE_Morph.prototype.groupColor.darker(40),
@@ -142,19 +142,19 @@ IDE_Morph.prototype.setDefaultDesign = function () {
 
 IDE_Morph.prototype.setFlatDesign = function () {
     MorphicPreferences.isFlat = true;
-    SpriteMorph.prototype.paletteColor = new Color(255, 255, 255);
-    SpriteMorph.prototype.paletteTextColor = new Color(70, 70, 70);
-    StageMorph.prototype.paletteTextColor
-        = SpriteMorph.prototype.paletteTextColor;
-    StageMorph.prototype.paletteColor = SpriteMorph.prototype.paletteColor;
-    SpriteMorph.prototype.sliderColor = SpriteMorph.prototype.paletteColor;
+    Sprite.prototype.paletteColor = new Color(255, 255, 255);
+    Sprite.prototype.paletteTextColor = new Color(70, 70, 70);
+    Stage.prototype.paletteTextColor
+        = Sprite.prototype.paletteTextColor;
+    Stage.prototype.paletteColor = Sprite.prototype.paletteColor;
+    Sprite.prototype.sliderColor = Sprite.prototype.paletteColor;
 
     IDE_Morph.prototype.buttonContrast = 30;
     IDE_Morph.prototype.backgroundColor = new Color(200, 200, 200);
     IDE_Morph.prototype.frameColor = new Color(255, 255, 255);
 
     IDE_Morph.prototype.groupColor = new Color(230, 230, 230);
-    IDE_Morph.prototype.sliderColor = SpriteMorph.prototype.sliderColor;
+    IDE_Morph.prototype.sliderColor = Sprite.prototype.sliderColor;
     IDE_Morph.prototype.buttonLabelColor = new Color(70, 70, 70);
     IDE_Morph.prototype.tabColors = [
         IDE_Morph.prototype.groupColor.lighter(60),
@@ -219,7 +219,7 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.serializer = new SnapSerializer();
 
     this.globalVariables = new VariableFrame();
-    this.currentSprite = new SpriteMorph(this.globalVariables);
+    this.currentSprite = new Sprite(this.globalVariables);
     this.sprites = new List([this.currentSprite]);
     this.currentCategory = 'motion';
     this.currentTab = 'scripts';
@@ -848,7 +848,7 @@ IDE_Morph.prototype.createControlBar = function () {
 
         x = Math.min(
             startButton.left() - (3 * padding + 2 * stageSizeButton.width()),
-            myself.right() - StageMorph.prototype.dimensions.x *
+            myself.right() - Stage.prototype.dimensions.x *
                 (myself.isSmallStage ? myself.stageRatio : 1)
         );
         [stageSizeButton, appModeButton].forEach(
@@ -951,7 +951,7 @@ IDE_Morph.prototype.createCategories = function () {
             colors = [
                 myself.frameColor,
                 myself.frameColor.darker(50),
-                SpriteMorph.prototype.blockColor[category]
+                Sprite.prototype.blockColor[category]
             ],
             button;
 
@@ -1019,7 +1019,7 @@ IDE_Morph.prototype.createCategories = function () {
         );
     }
 
-    SpriteMorph.prototype.categories.forEach(function (cat) {
+    Sprite.prototype.categories.forEach(function (cat) {
         if (!contains(['lists', 'other'], cat)) {
             addCategoryButton(cat);
         }
@@ -1054,7 +1054,7 @@ IDE_Morph.prototype.createPalette = function (forSearching) {
     this.palette.reactToDropOf = function (droppedMorph, hand) {
         if (droppedMorph instanceof DialogBoxMorph) {
             myself.world().add(droppedMorph);
-        } else if (droppedMorph instanceof SpriteMorph) {
+        } else if (droppedMorph instanceof Sprite) {
             myself.removeSprite(droppedMorph);
         } else if (droppedMorph instanceof SpriteIconMorph) {
             droppedMorph.destroy();
@@ -1096,10 +1096,10 @@ IDE_Morph.prototype.createPaletteHandle = function () {
 IDE_Morph.prototype.createStage = function () {
     // assumes that the logo pane has already been created
     if (this.stage) {this.stage.destroy(); }
-    StageMorph.prototype.frameRate = 0;
-    this.stage = new StageMorph(this.globalVariables);
+    Stage.prototype.frameRate = 0;
+    this.stage = new Stage(this.globalVariables);
     this.stage.setExtent(this.stage.dimensions); // dimensions are fixed
-    if (this.currentSprite instanceof SpriteMorph) {
+    if (this.currentSprite instanceof Sprite) {
         this.currentSprite.setPosition(
             this.stage.center().subtract(
                 this.currentSprite.extent().divideBy(2)
@@ -1148,7 +1148,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
             colors,
             myself, // the IDE is the target
             function () {
-                if (myself.currentSprite instanceof SpriteMorph) {
+                if (myself.currentSprite instanceof Sprite) {
                     myself.currentSprite.rotationStyle = rotationStyle;
                     myself.currentSprite.changed();
                     myself.currentSprite.drawNew();
@@ -1160,7 +1160,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
             },
             symbols[rotationStyle], // label
             function () {  // query
-                return myself.currentSprite instanceof SpriteMorph
+                return myself.currentSprite instanceof Sprite
                     && myself.currentSprite.rotationStyle === rotationStyle;
             },
             null, // environment
@@ -1181,7 +1181,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
             + ((rotationStyleButtons.length - 1) * (button.height() + 2))
             );
         myself.spriteBar.add(button);
-        if (myself.currentSprite instanceof StageMorph) {
+        if (myself.currentSprite instanceof Stage) {
             button.hide();
         }
         return button;
@@ -1254,7 +1254,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
     padlock.setPosition(nameField.bottomLeft().add(2));
     padlock.drawNew();
     this.spriteBar.add(padlock);
-    if (this.currentSprite instanceof StageMorph) {
+    if (this.currentSprite instanceof Stage) {
         padlock.hide();
     }
 
@@ -1294,7 +1294,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
         tabColors,
         null, // target
         function () {tabBar.tabTo('costumes'); },
-        localize(this.currentSprite instanceof SpriteMorph ?
+        localize(this.currentSprite instanceof Sprite ?
             'Costumes' : 'Backgrounds'
         ),
         function () {  // query
@@ -1401,7 +1401,7 @@ IDE_Morph.prototype.createSpriteEditor = function () {
         this.spriteEditor.reactToDropOf = function (droppedMorph) {
             if (droppedMorph instanceof DialogBoxMorph) {
                 myself.world().add(droppedMorph);
-            } else if (droppedMorph instanceof SpriteMorph) {
+            } else if (droppedMorph instanceof Sprite) {
                 myself.removeSprite(droppedMorph);
             } else {
                 droppedMorph.destroy();
@@ -1696,15 +1696,15 @@ IDE_Morph.prototype.setExtent = function (point) {
 
     // determine the minimum dimensions making sense for the current mode
     if (this.isAppMode) {
-        minExt = StageMorph.prototype.dimensions.add(
+        minExt = Stage.prototype.dimensions.add(
             this.controlBar.height() + 10
         );
     } else {
         if (this.stageRatio > 1) {
-            minExt = padding.add(StageMorph.prototype.dimensions);
+            minExt = padding.add(Stage.prototype.dimensions);
         } else {
             minExt = padding.add(
-                StageMorph.prototype.dimensions.multiplyBy(this.stageRatio)
+                Stage.prototype.dimensions.multiplyBy(this.stageRatio)
             );
         }
     }
@@ -1860,11 +1860,11 @@ IDE_Morph.prototype.toggleFastTracking = function () {
 };
 
 IDE_Morph.prototype.toggleVariableFrameRate = function () {
-    if (StageMorph.prototype.frameRate) {
-        StageMorph.prototype.frameRate = 0;
+    if (Stage.prototype.frameRate) {
+        Stage.prototype.frameRate = 0;
         this.stage.fps = 0;
     } else {
-        StageMorph.prototype.frameRate = 30;
+        Stage.prototype.frameRate = 30;
         this.stage.fps = 30;
     }
 };
@@ -1973,7 +1973,7 @@ IDE_Morph.prototype.refreshIDE = function () {
     } else {
         projectData = this.serializer.serialize(this.stage);
     }
-    SpriteMorph.prototype.initBlocks();
+    Sprite.prototype.initBlocks();
     this.buildPanes();
     this.fixLayout();
     if (this.loadNewProject) {
@@ -2009,7 +2009,7 @@ IDE_Morph.prototype.applySavedSettings = function () {
     if (zoom) {
         SyntaxElementMorph.prototype.setScale(Math.min(zoom, 12));
         CommentMorph.prototype.refreshScale();
-        SpriteMorph.prototype.initBlocks();
+        Sprite.prototype.initBlocks();
     }
 
     // language
@@ -2095,7 +2095,7 @@ IDE_Morph.prototype.removeSetting = function (key) {
 // IDE_Morph sprite list access
 
 IDE_Morph.prototype.addNewSprite = function () {
-    var sprite = new SpriteMorph(this.globalVariables),
+    var sprite = new Sprite(this.globalVariables),
         rnd = Process.prototype.reportRandom;
 
     sprite.name = this.newSpriteName(sprite.name);
@@ -2115,7 +2115,7 @@ IDE_Morph.prototype.addNewSprite = function () {
 };
 
 IDE_Morph.prototype.paintNewSprite = function () {
-    var sprite = new SpriteMorph(this.globalVariables),
+    var sprite = new Sprite(this.globalVariables),
         cos = new Costume(),
         myself = this;
 
@@ -2165,7 +2165,7 @@ IDE_Morph.prototype.removeSprite = function (sprite) {
     this.fixLayout();
     this.currentSprite = detect(
         this.stage.children,
-        function (morph) {return morph instanceof SpriteMorph; }
+        function (morph) {return morph instanceof Sprite; }
     ) || this.stage;
 
     this.selectSprite(this.currentSprite);
@@ -2616,10 +2616,10 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Sprite Nesting',
         function () {
-            SpriteMorph.prototype.enableNesting =
-                !SpriteMorph.prototype.enableNesting;
+            Sprite.prototype.enableNesting =
+                !Sprite.prototype.enableNesting;
         },
-        SpriteMorph.prototype.enableNesting,
+        Sprite.prototype.enableNesting,
         'uncheck to disable\nsprite composition',
         'check to enable\nsprite composition',
         true
@@ -2627,13 +2627,13 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'First-Class Sprites',
         function () {
-            SpriteMorph.prototype.enableFirstClass =
-                !SpriteMorph.prototype.enableFirstClass;
+            Sprite.prototype.enableFirstClass =
+                !Sprite.prototype.enableFirstClass;
             myself.currentSprite.blocksCache.sensing = null;
             myself.currentSprite.paletteCache.sensing = null;
             myself.refreshPalette();
         },
-        SpriteMorph.prototype.enableFirstClass,
+        Sprite.prototype.enableFirstClass,
         'uncheck to disable support\nfor first-class sprites',
         'check to enable support\n for first-class sprite',
         true
@@ -2718,7 +2718,7 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Prefer smooth animations',
         'toggleVariableFrameRate',
-        StageMorph.prototype.frameRate,
+        Stage.prototype.frameRate,
         'uncheck for greater speed\nat variable frame rates',
         'check for smooth, predictable\nanimations across computers',
         true
@@ -2726,10 +2726,10 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Flat line ends',
         function () {
-            SpriteMorph.prototype.useFlatLineEnds =
-                !SpriteMorph.prototype.useFlatLineEnds;
+            Sprite.prototype.useFlatLineEnds =
+                !Sprite.prototype.useFlatLineEnds;
         },
-        SpriteMorph.prototype.useFlatLineEnds,
+        Sprite.prototype.useFlatLineEnds,
         'uncheck for round ends of lines',
         'check for flat ends of lines'
     );
@@ -2746,13 +2746,13 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Codification support',
         function () {
-            StageMorph.prototype.enableCodeMapping =
-                !StageMorph.prototype.enableCodeMapping;
+            Stage.prototype.enableCodeMapping =
+                !Stage.prototype.enableCodeMapping;
             myself.currentSprite.blocksCache.variables = null;
             myself.currentSprite.paletteCache.variables = null;
             myself.refreshPalette();
         },
-        StageMorph.prototype.enableCodeMapping,
+        Stage.prototype.enableCodeMapping,
         'uncheck to disable\nblock to text mapping features',
         'check for block\nto text mapping features',
         false
@@ -2760,13 +2760,13 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Inheritance support',
         function () {
-            StageMorph.prototype.enableInheritance =
-                !StageMorph.prototype.enableInheritance;
+            Stage.prototype.enableInheritance =
+                !Stage.prototype.enableInheritance;
             myself.currentSprite.blocksCache.variables = null;
             myself.currentSprite.paletteCache.variables = null;
             myself.refreshPalette();
         },
-        StageMorph.prototype.enableInheritance,
+        Stage.prototype.enableInheritance,
         'uncheck to disable\nsprite inheritance features',
         'check for sprite\ninheritance features',
         false
@@ -2774,10 +2774,10 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Persist linked sublist IDs',
         function () {
-            StageMorph.prototype.enableSublistIDs =
-                !StageMorph.prototype.enableSublistIDs;
+            Stage.prototype.enableSublistIDs =
+                !Stage.prototype.enableSublistIDs;
         },
-        StageMorph.prototype.enableSublistIDs,
+        Stage.prototype.enableSublistIDs,
         'uncheck to disable\nsaving linked sublist identities',
         'check to enable\nsaving linked sublist identities',
         true
@@ -2790,7 +2790,7 @@ IDE_Morph.prototype.projectMenu = function () {
         myself = this,
         world = this.world(),
         pos = this.controlBar.projectButton.bottomLeft(),
-        graphicsName = this.currentSprite instanceof SpriteMorph ?
+        graphicsName = this.currentSprite instanceof Sprite ?
                 'Costumes' : 'Backgrounds',
         shiftClicked = (world.currentKey === 16);
 
@@ -3415,16 +3415,16 @@ IDE_Morph.prototype.newProject = function () {
         location.hash = '';
     }
     this.globalVariables = new VariableFrame();
-    this.currentSprite = new SpriteMorph(this.globalVariables);
+    this.currentSprite = new Sprite(this.globalVariables);
     this.sprites = new List([this.currentSprite]);
-    StageMorph.prototype.dimensions = new Point(480, 360);
-    StageMorph.prototype.hiddenPrimitives = {};
-    StageMorph.prototype.codeMappings = {};
-    StageMorph.prototype.codeHeaders = {};
-    StageMorph.prototype.enableCodeMapping = false;
-    StageMorph.prototype.enableInheritance = false;
-    StageMorph.prototype.enableSublistIDs = false;
-    SpriteMorph.prototype.useFlatLineEnds = false;
+    Stage.prototype.dimensions = new Point(480, 360);
+    Stage.prototype.hiddenPrimitives = {};
+    Stage.prototype.codeMappings = {};
+    Stage.prototype.codeHeaders = {};
+    Stage.prototype.enableCodeMapping = false;
+    Stage.prototype.enableInheritance = false;
+    Stage.prototype.enableSublistIDs = false;
+    Sprite.prototype.useFlatLineEnds = false;
     BooleanSlotMorph.prototype.isTernary = true;
     Process.prototype.enableLiveCoding = false;
     this.setProjectName('');
@@ -3658,7 +3658,7 @@ IDE_Morph.prototype.exportProjectSummary = function (useDropShadows) {
             names.forEach(function (name) {
                 /*
                 addImage(
-                    SpriteMorph.prototype.variableBlock(name).scriptPic()
+                    Sprite.prototype.variableBlock(name).scriptPic()
                 );
                 */
                 var watcher, listMorph, li, img;
@@ -3670,7 +3670,7 @@ IDE_Morph.prototype.exportProjectSummary = function (useDropShadows) {
                 li = addNode('li', ul);
                 watcher = new WatcherMorph(
                     name,
-                    SpriteMorph.prototype.blockColor.variables,
+                    Sprite.prototype.blockColor.variables,
                     varFrame,
                     name
                 );
@@ -3687,7 +3687,7 @@ IDE_Morph.prototype.exportProjectSummary = function (useDropShadows) {
     function addBlocks(definitions) {
         if (definitions.length) {
             add(localize('Blocks'), 'h3');
-            SpriteMorph.prototype.categories.forEach(function (category) {
+            Sprite.prototype.categories.forEach(function (category) {
                 var isFirst = true,
                     ul;
                 definitions.forEach(function (def) {
@@ -3813,12 +3813,12 @@ IDE_Morph.prototype.exportProjectSummary = function (useDropShadows) {
         add(sprite.name, 'a', tocEntry).attributes.href = '#' + sprite.name;
 
         add(sprite.name, 'h2').attributes.id = sprite.name;
-        // if (sprite instanceof SpriteMorph || sprite.costume) {
+        // if (sprite instanceof Sprite || sprite.costume) {
         pic = addImage(
             sprite.thumbnail(sprite.extent().divideBy(stage.scale))
         );
         pic.attributes.class = 'sprite';
-        if (sprite instanceof SpriteMorph) {
+        if (sprite instanceof Sprite) {
             if (sprite.exemplar) {
                 addImage(
                     sprite.exemplar.thumbnail(new Point(40, 40)),
@@ -3928,12 +3928,12 @@ IDE_Morph.prototype.openProjectString = function (str) {
 IDE_Morph.prototype.rawOpenProjectString = function (str) {
     this.toggleAppMode(false);
     this.spriteBar.tabBar.tabTo('scripts');
-    StageMorph.prototype.hiddenPrimitives = {};
-    StageMorph.prototype.codeMappings = {};
-    StageMorph.prototype.codeHeaders = {};
-    StageMorph.prototype.enableCodeMapping = false;
-    StageMorph.prototype.enableInheritance = false;
-    StageMorph.prototype.enableSublistIDs = false;
+    Stage.prototype.hiddenPrimitives = {};
+    Stage.prototype.codeMappings = {};
+    Stage.prototype.codeHeaders = {};
+    Stage.prototype.enableCodeMapping = false;
+    Stage.prototype.enableInheritance = false;
+    Stage.prototype.enableSublistIDs = false;
     Process.prototype.enableLiveCoding = false;
     if (Process.prototype.isCatchingErrors) {
         try {
@@ -3973,12 +3973,12 @@ IDE_Morph.prototype.openCloudDataString = function (str) {
 
 IDE_Morph.prototype.rawOpenCloudDataString = function (str) {
     var model;
-    StageMorph.prototype.hiddenPrimitives = {};
-    StageMorph.prototype.codeMappings = {};
-    StageMorph.prototype.codeHeaders = {};
-    StageMorph.prototype.enableCodeMapping = false;
-    StageMorph.prototype.enableInheritance = false;
-    StageMorph.prototype.enableSublistIDs = false;
+    Stage.prototype.hiddenPrimitives = {};
+    Stage.prototype.codeMappings = {};
+    Stage.prototype.codeHeaders = {};
+    Stage.prototype.enableCodeMapping = false;
+    Stage.prototype.enableInheritance = false;
+    Stage.prototype.enableSublistIDs = false;
     Process.prototype.enableLiveCoding = false;
     if (Process.prototype.isCatchingErrors) {
         try {
@@ -4294,14 +4294,14 @@ IDE_Morph.prototype.flushBlocksCache = function (category) {
     if (category) {
         this.stage.blocksCache[category] = null;
         this.stage.children.forEach(function (m) {
-            if (m instanceof SpriteMorph) {
+            if (m instanceof Sprite) {
                 m.blocksCache[category] = null;
             }
         });
     } else {
         this.stage.blocksCache = {};
         this.stage.children.forEach(function (m) {
-            if (m instanceof SpriteMorph) {
+            if (m instanceof Sprite) {
                 m.blocksCache = {};
             }
         });
@@ -4314,14 +4314,14 @@ IDE_Morph.prototype.flushPaletteCache = function (category) {
     if (category) {
         this.stage.paletteCache[category] = null;
         this.stage.children.forEach(function (m) {
-            if (m instanceof SpriteMorph) {
+            if (m instanceof Sprite) {
                 m.paletteCache[category] = null;
             }
         });
     } else {
         this.stage.paletteCache = {};
         this.stage.children.forEach(function (m) {
-            if (m instanceof SpriteMorph) {
+            if (m instanceof Sprite) {
                 m.paletteCache = {};
             }
         });
@@ -4367,7 +4367,7 @@ IDE_Morph.prototype.toggleDynamicInputLabels = function () {
     } else {
         projectData = this.serializer.serialize(this.stage);
     }
-    SpriteMorph.prototype.initBlocks();
+    Sprite.prototype.initBlocks();
     this.spriteBar.tabBar.tabTo('scripts');
     this.createCategories();
     this.createCorralBar();
@@ -4635,7 +4635,7 @@ IDE_Morph.prototype.reflectLanguage = function (lang, callback) {
             projectData = this.serializer.serialize(this.stage);
         }
     }
-    SpriteMorph.prototype.initBlocks();
+    Sprite.prototype.initBlocks();
     this.spriteBar.tabBar.tabTo('scripts');
     this.createCategories();
     this.createCorralBar();
@@ -4661,18 +4661,18 @@ IDE_Morph.prototype.userSetBlocksScale = function () {
         action;
 
     scrpt = new CommandBlockMorph();
-    scrpt.color = SpriteMorph.prototype.blockColor.motion;
+    scrpt.color = Sprite.prototype.blockColor.motion;
     scrpt.setSpec(localize('build'));
     blck = new CommandBlockMorph();
-    blck.color = SpriteMorph.prototype.blockColor.sound;
+    blck.color = Sprite.prototype.blockColor.sound;
     blck.setSpec(localize('your own'));
     scrpt.nextBlock(blck);
     blck = new CommandBlockMorph();
-    blck.color = SpriteMorph.prototype.blockColor.operators;
+    blck.color = Sprite.prototype.blockColor.operators;
     blck.setSpec(localize('blocks'));
     scrpt.bottomBlock().nextBlock(blck);
     /*
-    blck = SpriteMorph.prototype.blockForSelector('doForever');
+    blck = Sprite.prototype.blockForSelector('doForever');
     blck.inputs()[0].nestedBlock(scrpt);
     */
 
@@ -4748,7 +4748,7 @@ IDE_Morph.prototype.setBlocksScale = function (num) {
     }
     SyntaxElementMorph.prototype.setScale(num);
     CommentMorph.prototype.refreshScale();
-    SpriteMorph.prototype.initBlocks();
+    Sprite.prototype.initBlocks();
     this.spriteBar.tabBar.tabTo('scripts');
     this.createCategories();
     this.createCorralBar();
@@ -4766,7 +4766,7 @@ IDE_Morph.prototype.userSetStageSize = function () {
         this
     ).promptVector(
         "Stage size",
-        StageMorph.prototype.dimensions,
+        Stage.prototype.dimensions,
         new Point(480, 360),
         'Stage width',
         'Stage height',
@@ -4784,16 +4784,16 @@ IDE_Morph.prototype.setStageExtent = function (aPoint) {
     function zoom() {
         myself.step = function () {
             var delta = ext.subtract(
-                StageMorph.prototype.dimensions
+                Stage.prototype.dimensions
             ).divideBy(2);
             if (delta.abs().lt(new Point(5, 5))) {
-                StageMorph.prototype.dimensions = ext;
+                Stage.prototype.dimensions = ext;
                 delete myself.step;
             } else {
-                StageMorph.prototype.dimensions =
-                    StageMorph.prototype.dimensions.add(delta);
+                Stage.prototype.dimensions =
+                    Stage.prototype.dimensions.add(delta);
             }
-            myself.stage.setExtent(StageMorph.prototype.dimensions);
+            myself.stage.setExtent(Stage.prototype.dimensions);
             myself.stage.clearPenTrails();
             myself.fixLayout();
             this.setExtent(world.extent());
@@ -4807,8 +4807,8 @@ IDE_Morph.prototype.setStageExtent = function (aPoint) {
     if (this.isAnimating) {
         zoom();
     } else {
-        StageMorph.prototype.dimensions = ext;
-        this.stage.setExtent(StageMorph.prototype.dimensions);
+        Stage.prototype.dimensions = ext;
+        this.stage.setExtent(Stage.prototype.dimensions);
         this.stage.clearPenTrails();
         this.fixLayout();
         this.setExtent(world.extent());
@@ -6324,9 +6324,9 @@ LibraryImportDialogMorph.prototype.initializePalette = function () {
     this.palette = new ScrollFrameMorph(
         null,
         null,
-        SpriteMorph.prototype.sliderColor
+        Sprite.prototype.sliderColor
     );
-    this.palette.color = SpriteMorph.prototype.paletteColor;
+    this.palette.color = Sprite.prototype.paletteColor;
     this.palette.padding = 4;
     this.palette.isDraggable = false;
     this.palette.acceptsDrops = false;
@@ -6547,7 +6547,7 @@ LibraryImportDialogMorph.prototype.displayBlocks = function (libraryKey) {
     x = this.palette.left() + padding;
     y = this.palette.top();
 
-    SpriteMorph.prototype.categories.forEach(function (category) {
+    Sprite.prototype.categories.forEach(function (category) {
         blocksList.forEach(function (definition) {
             if (definition.category !== category) {return; }
             if (category !== previousCategory) {
@@ -6645,7 +6645,7 @@ SpriteIconMorph.prototype.init = function (aSprite, aTemplate) {
     };
 
     // additional properties:
-    this.object = aSprite || new SpriteMorph(); // mandatory, actually
+    this.object = aSprite || new Sprite(); // mandatory, actually
     this.version = this.object.version;
     this.thumbnail = null;
     this.rotationButton = null; // synchronous rotation of nested sprites
@@ -6679,7 +6679,7 @@ SpriteIconMorph.prototype.createThumbnail = function () {
 
     this.thumbnail = new Morph();
     this.thumbnail.setExtent(this.thumbSize);
-    if (this.object instanceof SpriteMorph) { // support nested sprites
+    if (this.object instanceof Sprite) { // support nested sprites
         this.thumbnail.image = this.object.fullThumbnail(this.thumbSize);
         this.createRotationButton();
     } else {
@@ -6814,7 +6814,7 @@ SpriteIconMorph.prototype.fixLayout = function () {
 SpriteIconMorph.prototype.userMenu = function () {
     var menu = new MenuMorph(this),
         myself = this;
-    if (this.object instanceof StageMorph) {
+    if (this.object instanceof Stage) {
         menu.addItem(
             'pic...',
             function () {
@@ -6829,13 +6829,13 @@ SpriteIconMorph.prototype.userMenu = function () {
         );
         return menu;
     }
-    if (!(this.object instanceof SpriteMorph)) {return null; }
+    if (!(this.object instanceof Sprite)) {return null; }
     menu.addItem("show", 'showSpriteOnStage');
     menu.addLine();
     menu.addItem("duplicate", 'duplicateSprite');
     menu.addItem("delete", 'removeSprite');
     menu.addLine();
-    if (StageMorph.prototype.enableInheritance) {
+    if (Stage.prototype.enableInheritance) {
         menu.addItem("parent...", 'chooseExemplar');
     }
     if (this.object.anchor) {
@@ -7156,7 +7156,7 @@ CostumeIconMorph.prototype.renameCostume = function () {
             }
         }
     ).prompt(
-        ide.currentSprite instanceof SpriteMorph ?
+        ide.currentSprite instanceof Sprite ?
             'rename costume' : 'rename background',
         costume.name,
         this.world()
@@ -7302,7 +7302,7 @@ TurtleIconMorph.prototype.createThumbnail = function () {
     if (this.thumbnail) {
         this.thumbnail.destroy();
     }
-    if (this.object instanceof SpriteMorph) {
+    if (this.object instanceof Sprite) {
         this.thumbnail = new SymbolMorph(
             'turtle',
             this.thumbSize.y,
@@ -7330,7 +7330,7 @@ TurtleIconMorph.prototype.createLabel = function () {
     }
     txt = new StringMorph(
         localize(
-            this.object instanceof SpriteMorph ? 'Turtle' : 'Empty'
+            this.object instanceof Sprite ? 'Turtle' : 'Empty'
         ),
         this.fontSize,
         this.fontStyle,
@@ -7368,7 +7368,7 @@ TurtleIconMorph.prototype.userMenu = function () {
         menu = new MenuMorph(this, 'pen'),
         on = '\u25CF',
         off = '\u25CB';
-    if (this.object instanceof StageMorph) {
+    if (this.object instanceof Stage) {
         return null;
     }
     menu.addItem(
@@ -7416,7 +7416,7 @@ function WardrobeMorph(aSprite, sliderColor) {
 
 WardrobeMorph.prototype.init = function (aSprite, sliderColor) {
     // additional properties
-    this.sprite = aSprite || new SpriteMorph();
+    this.sprite = aSprite || new Sprite();
     this.costumesVersion = null;
     this.spriteVersion = null;
 
@@ -7488,7 +7488,7 @@ WardrobeMorph.prototype.updateList = function () {
         "costumes tab help" // look up long string in translator
     ));
     txt.fontSize = 9;
-    txt.setColor(SpriteMorph.prototype.paletteTextColor);
+    txt.setColor(Sprite.prototype.paletteTextColor);
 
     txt.setPosition(new Point(x, y));
     this.addContents(txt);
@@ -7801,7 +7801,7 @@ function JukeboxMorph(aSprite, sliderColor) {
 
 JukeboxMorph.prototype.init = function (aSprite, sliderColor) {
     // additional properties
-    this.sprite = aSprite || new SpriteMorph();
+    this.sprite = aSprite || new Sprite();
     this.costumesVersion = null;
     this.spriteVersion = null;
 
@@ -7842,7 +7842,7 @@ JukeboxMorph.prototype.updateList = function () {
         'import a sound from your computer\nby dragging it into here'
     ));
     txt.fontSize = 9;
-    txt.setColor(SpriteMorph.prototype.paletteTextColor);
+    txt.setColor(Sprite.prototype.paletteTextColor);
     txt.setPosition(new Point(x, y));
     this.addContents(txt);
     y = txt.bottom() + padding;
@@ -7907,7 +7907,7 @@ JukeboxMorph.prototype.reactToDropOf = function (icon) {
 
 // StageHandleMorph ////////////////////////////////////////////////////////
 
-// I am a horizontal resizing handle for a StageMorph
+// I am a horizontal resizing handle for a Stage
 
 // StageHandleMorph inherits from Morph:
 

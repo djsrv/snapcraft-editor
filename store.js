@@ -49,7 +49,7 @@
 
 */
 
-/*global modules, XML_Element, VariableFrame, StageMorph, SpriteMorph,
+/*global modules, XML_Element, VariableFrame, Stage, Sprite,
 WatcherMorph, Point, CustomBlockDefinition, Context, ReporterBlockMorph,
 CommandBlockMorph, detect, CustomCommandBlockMorph, CustomReporterBlockMorph,
 Color, List, newCanvas, Costume, Sound, Audio, IDE_Morph, ScriptsMorph,
@@ -371,8 +371,8 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
     /* Stage */
 
     model.stage = model.project.require('stage');
-    StageMorph.prototype.frameRate = 0;
-    project.stage = new StageMorph(project.globalVariables);
+    Stage.prototype.frameRate = 0;
+    project.stage = new Stage(project.globalVariables);
     if (Object.prototype.hasOwnProperty.call(
             model.stage.attributes,
             'id'
@@ -384,7 +384,7 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
     }
     if (model.stage.attributes.scheduled === 'true') {
         project.stage.fps = 30;
-        StageMorph.prototype.frameRate = 30;
+        Stage.prototype.frameRate = 30;
     }
     model.pentrails = model.stage.childNamed('pentrails');
     if (model.pentrails) {
@@ -400,27 +400,27 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
         project.pentrails.src = model.pentrails.contents;
     }
     project.stage.setTempo(model.stage.attributes.tempo);
-    StageMorph.prototype.dimensions = new Point(480, 360);
+    Stage.prototype.dimensions = new Point(480, 360);
     if (model.stage.attributes.width) {
-        StageMorph.prototype.dimensions.x =
+        Stage.prototype.dimensions.x =
             Math.max(+model.stage.attributes.width, 480);
     }
     if (model.stage.attributes.height) {
-        StageMorph.prototype.dimensions.y =
+        Stage.prototype.dimensions.y =
             Math.max(+model.stage.attributes.height, 180);
     }
-    project.stage.setExtent(StageMorph.prototype.dimensions);
-    SpriteMorph.prototype.useFlatLineEnds =
+    project.stage.setExtent(Stage.prototype.dimensions);
+    Sprite.prototype.useFlatLineEnds =
         model.stage.attributes.lines === 'flat';
     BooleanSlotMorph.prototype.isTernary =
         model.stage.attributes.ternary !== 'false';
     project.stage.isThreadSafe =
         model.stage.attributes.threadsafe === 'true';
-    StageMorph.prototype.enableCodeMapping =
+    Stage.prototype.enableCodeMapping =
         model.stage.attributes.codify === 'true';
-    StageMorph.prototype.enableInheritance =
+    Stage.prototype.enableInheritance =
         model.stage.attributes.inheritance === 'true';
-    StageMorph.prototype.enableSublistIDs =
+    Stage.prototype.enableSublistIDs =
         model.stage.attributes.sublistIDs === 'true';
 
     model.hiddenPrimitives = model.project.childNamed('hidden');
@@ -428,7 +428,7 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
         model.hiddenPrimitives.contents.split(' ').forEach(
             function (sel) {
                 if (sel) {
-                    StageMorph.prototype.hiddenPrimitives[sel] = true;
+                    Stage.prototype.hiddenPrimitives[sel] = true;
                 }
             }
         );
@@ -437,14 +437,14 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
     model.codeHeaders = model.project.childNamed('headers');
     if (model.codeHeaders) {
         model.codeHeaders.children.forEach(function (xml) {
-            StageMorph.prototype.codeHeaders[xml.tag] = xml.contents;
+            Stage.prototype.codeHeaders[xml.tag] = xml.contents;
         });
     }
 
     model.codeMappings = model.project.childNamed('code');
     if (model.codeMappings) {
         model.codeMappings.children.forEach(function (xml) {
-            StageMorph.prototype.codeMappings[xml.tag] = xml.contents;
+            Stage.prototype.codeMappings[xml.tag] = xml.contents;
         });
     }
 
@@ -583,7 +583,7 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
 SnapSerializer.prototype.loadBlocks = function (xmlString, targetStage) {
     // public - answer a new Array of custom block definitions
     // represented by the given XML String
-    var stage = new StageMorph(),
+    var stage = new Stage(),
         model;
 
     this.project = {
@@ -628,7 +628,7 @@ SnapSerializer.prototype.loadSprites = function (xmlString, ide) {
         throw 'Module uses newer version of Serializer';
     }
     model.childrenNamed('sprite').forEach(function (model) {
-        var sprite  = new SpriteMorph(project.globalVariables);
+        var sprite  = new Sprite(project.globalVariables);
 
         if (model.attributes.id) {
             myself.objects[model.attributes.id] = sprite;
@@ -1018,7 +1018,7 @@ SnapSerializer.prototype.loadBlock = function (model, isReporter) {
                 model.attributes,
                 'var'
             )) {
-            return SpriteMorph.prototype.variableBlock(
+            return Sprite.prototype.variableBlock(
                 model.attributes['var']
             );
         }
@@ -1032,8 +1032,8 @@ SnapSerializer.prototype.loadBlock = function (model, isReporter) {
             }
         }
         */
-        block = SpriteMorph.prototype.blockForSelector(model.attributes.s);
-        migration = SpriteMorph.prototype.blockMigrations[model.attributes.s];
+        block = Sprite.prototype.blockForSelector(model.attributes.s);
+        migration = Sprite.prototype.blockMigrations[model.attributes.s];
         if (migration) {
             migrationOffset = migration.offset;
         }
@@ -1240,7 +1240,7 @@ SnapSerializer.prototype.loadValue = function (model) {
         });
         return v;
     case 'sprite':
-        v  = new SpriteMorph(myself.project.globalVariables);
+        v  = new Sprite(myself.project.globalVariables);
         if (model.attributes.id) {
             myself.objects[model.attributes.id] = v;
         }
@@ -1439,7 +1439,7 @@ SnapSerializer.prototype.openProject = function (project, ide) {
     ide.add(project.stage);
     ide.stage = project.stage;
     sprites = ide.stage.children.filter(function (child) {
-        return child instanceof SpriteMorph;
+        return child instanceof Sprite;
     });
     sprites.sort(function (x, y) {
         return x.idx - y.idx;
@@ -1479,7 +1479,7 @@ Array.prototype.toXML = function (serializer) {
 
 // Sprites
 
-StageMorph.prototype.toXML = function (serializer) {
+Stage.prototype.toXML = function (serializer) {
     var thumbnail = normalizeCanvas(
             this.thumbnail(SnapSerializer.prototype.thumbnailSize),
             true
@@ -1496,12 +1496,12 @@ StageMorph.prototype.toXML = function (serializer) {
 
     function code(key) {
         var str = '';
-        Object.keys(StageMorph.prototype[key]).forEach(
+        Object.keys(Stage.prototype[key]).forEach(
             function (selector) {
                 str += (
                     '<' + selector + '>' +
                         XML_Element.prototype.escape(
-                            StageMorph.prototype[key][selector]
+                            Stage.prototype[key][selector]
                         ) +
                         '</' + selector + '>'
                 );
@@ -1542,17 +1542,17 @@ StageMorph.prototype.toXML = function (serializer) {
         (ide && ide.projectNotes) ? ide.projectNotes : '',
         thumbdata,
         this.name,
-        StageMorph.prototype.dimensions.x,
-        StageMorph.prototype.dimensions.y,
+        Stage.prototype.dimensions.x,
+        Stage.prototype.dimensions.y,
         this.getCostumeIdx(),
         this.getTempo(),
         this.isThreadSafe,
-        SpriteMorph.prototype.useFlatLineEnds ? 'flat' : 'round',
+        Sprite.prototype.useFlatLineEnds ? 'flat' : 'round',
         BooleanSlotMorph.prototype.isTernary,
         this.enableCodeMapping,
         this.enableInheritance,
         this.enableSublistIDs,
-        StageMorph.prototype.frameRate !== 0,
+        Stage.prototype.frameRate !== 0,
         normalizeCanvas(this.trailsCanvas, true).toDataURL('image/png'),
         serializer.store(this.costumes, this.name + '_cst'),
         serializer.store(this.sounds, this.name + '_snd'),
@@ -1560,7 +1560,7 @@ StageMorph.prototype.toXML = function (serializer) {
         serializer.store(this.customBlocks),
         serializer.store(this.scripts),
         serializer.store(this.children),
-        Object.keys(StageMorph.prototype.hiddenPrimitives).reduce(
+        Object.keys(Stage.prototype.hiddenPrimitives).reduce(
                 function (a, b) {return a + ' ' + b; },
                 ''
             ),
@@ -1572,8 +1572,8 @@ StageMorph.prototype.toXML = function (serializer) {
     );
 };
 
-SpriteMorph.prototype.toXML = function (serializer) {
-    var stage = this.parentThatIsA(StageMorph),
+Sprite.prototype.toXML = function (serializer) {
+    var stage = this.parentThatIsA(Stage),
         ide = stage ? stage.parentThatIsA(IDE_Morph) : null,
         idx = ide ? ide.sprites.asArray().indexOf(this) + 1 : 0;
     return serializer.format(
@@ -1976,7 +1976,7 @@ List.prototype.toXML = function (serializer, mediaContext) {
     var xml, value, item;
     if (this.isLinked) {
         xml = '<list linked="linked" ~>';
-        if (StageMorph.prototype.enableSublistIDs) {
+        if (Stage.prototype.enableSublistIDs) {
             // recursively nest tails:
             value = this.first;
             if (!isNil(value)) {

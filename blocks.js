@@ -141,8 +141,8 @@ Color, ColorPaletteMorph, FrameMorph, Function, HandleMorph, Math, MenuMorph,
 Morph, MorphicPreferences, Object, Point, ScrollFrameMorph, ShadowMorph,
 String, StringMorph, TextMorph, WorldMorph, contains, degrees, detect,
 document, getDocumentPositionOf, isNaN, isString, newCanvas, nop, parseFloat,
-radians, useBlurredShadows, SpeechBubbleMorph, modules, StageMorph,
-fontHeight, TableFrameMorph, SpriteMorph, Context, ListWatcherMorph,
+radians, useBlurredShadows, SpeechBubbleMorph, modules, Stage,
+fontHeight, TableFrameMorph, Sprite, Context, ListWatcherMorph,
 CellMorph, DialogBoxMorph, BlockInputFragmentMorph, PrototypeHatBlockMorph,
 Costume, IDE_Morph, BlockDialogMorph, BlockEditorMorph, localize, isNil,
 isSnapObject, copy, PushButtonMorph, SpriteIconMorph, Process, AlignmentMorph,
@@ -881,14 +881,14 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
             break;
         case '%cmdRing':
             part = new RingMorph();
-            part.color = SpriteMorph.prototype.blockColor.other;
+            part.color = Sprite.prototype.blockColor.other;
             part.selector = 'reifyScript';
             part.setSpec('%rc %ringparms');
             part.isDraggable = true;
             break;
         case '%repRing':
             part = new RingMorph();
-            part.color = SpriteMorph.prototype.blockColor.other;
+            part.color = Sprite.prototype.blockColor.other;
             part.selector = 'reifyReporter';
             part.setSpec('%rr %ringparms');
             part.isDraggable = true;
@@ -896,7 +896,7 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
             break;
         case '%predRing':
             part = new RingMorph(true);
-            part.color = SpriteMorph.prototype.blockColor.other;
+            part.color = Sprite.prototype.blockColor.other;
             part.selector = 'reifyPredicate';
             part.setSpec('%rp %ringparms');
             part.isDraggable = true;
@@ -925,7 +925,7 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
         case '%inputName':
             part = new ReporterBlockMorph();
             part.category = 'variables';
-            part.color = SpriteMorph.prototype.blockColor.variables;
+            part.color = Sprite.prototype.blockColor.variables;
             part.setSpec(localize('Input name'));
             break;
         case '%s':
@@ -1933,7 +1933,7 @@ SyntaxElementMorph.prototype.showBubble = function (value, exportPic) {
         morphToShow.silentSetHeight(img.height);
         morphToShow.image = img;
     } else if (typeof value === 'boolean') {
-        morphToShow = SpriteMorph.prototype.booleanMorph.call(
+        morphToShow = Sprite.prototype.booleanMorph.call(
             null,
             value
         );
@@ -1960,7 +1960,7 @@ SyntaxElementMorph.prototype.showBubble = function (value, exportPic) {
         );
     }
     if (ide && (ide.currentSprite !== rcvr)) {
-        if (rcvr instanceof StageMorph) {
+        if (rcvr instanceof Stage) {
             anchor = ide.corral.stageIcon;
         } else {
             anchor = detect(
@@ -2447,7 +2447,7 @@ BlockMorph.prototype.userMenu = function () {
                     'hidePrimitive'
                 );
             }
-            if (StageMorph.prototype.enableCodeMapping) {
+            if (Stage.prototype.enableCodeMapping) {
                 menu.addLine();
                 menu.addItem(
                     'header mapping...',
@@ -2468,12 +2468,12 @@ BlockMorph.prototype.userMenu = function () {
             renameVar,
             'rename only\nthis reporter'
         );
-    } else if (SpriteMorph.prototype.blockAlternatives[this.selector]) {
+    } else if (Sprite.prototype.blockAlternatives[this.selector]) {
         menu.addItem(
             'relabel...',
             function () {
                 myself.relabel(
-                    SpriteMorph.prototype.blockAlternatives[myself.selector]
+                    Sprite.prototype.blockAlternatives[myself.selector]
                 );
             }
         );
@@ -2591,7 +2591,7 @@ BlockMorph.prototype.userMenu = function () {
     }
     menu.addLine();
     menu.addItem("ringify", 'ringify');
-    if (StageMorph.prototype.enableCodeMapping) {
+    if (Stage.prototype.enableCodeMapping) {
         menu.addLine();
         menu.addItem(
             'header mapping...',
@@ -2629,7 +2629,7 @@ BlockMorph.prototype.hidePrimitive = function () {
         dict,
         cat;
     if (!ide) {return; }
-    StageMorph.prototype.hiddenPrimitives[this.selector] = true;
+    Stage.prototype.hiddenPrimitives[this.selector] = true;
     dict = {
         doWarp: 'control',
         reifyScript: 'operators',
@@ -2780,7 +2780,7 @@ BlockMorph.prototype.relabel = function (alternativeSelectors) {
         oldInputs = this.inputs(),
         myself = this;
     alternativeSelectors.forEach(function (sel) {
-        var block = SpriteMorph.prototype.blockForSelector(sel);
+        var block = Sprite.prototype.blockForSelector(sel);
         block.restoreInputs(oldInputs);
         block.fixBlockColor(null, true);
         block.addShadow(new Point(3, 3));
@@ -2803,7 +2803,7 @@ BlockMorph.prototype.setSelector = function (aSelector) {
         scripts = this.parentThatIsA(ScriptsMorph),
         surplus,
         info;
-    info = SpriteMorph.prototype.blocks[aSelector];
+    info = Sprite.prototype.blocks[aSelector];
     this.setCategory(info.category);
     this.selector = aSelector;
     this.setSpec(localize(info.spec));
@@ -2950,14 +2950,14 @@ BlockMorph.prototype.mapToHeader = function () {
             if (key === 'evaluateCustomBlock') {
                 myself.definition.codeHeader = code;
             } else {
-                StageMorph.prototype.codeHeaders[key] = code;
+                Stage.prototype.codeHeaders[key] = code;
             }
         },
         this
     ).promptCode(
         'Header mapping',
         key === 'evaluateCustomBlock' ? this.definition.codeHeader || ''
-                 : StageMorph.prototype.codeHeaders[key] || '',
+                 : Stage.prototype.codeHeaders[key] || '',
         this.world(),
         pic,
         help
@@ -2979,14 +2979,14 @@ BlockMorph.prototype.mapToCode = function () {
             if (key === 'evaluateCustomBlock') {
                 myself.definition.codeMapping = code;
             } else {
-                StageMorph.prototype.codeMappings[key] = code;
+                Stage.prototype.codeMappings[key] = code;
             }
         },
         this
     ).promptCode(
         'Code mapping',
         key === 'evaluateCustomBlock' ? this.definition.codeMapping || ''
-                 : StageMorph.prototype.codeMappings[key] || '',
+                 : Stage.prototype.codeMappings[key] || '',
         this.world(),
         pic,
         'Enter code that corresponds to the block\'s operation ' +
@@ -3003,7 +3003,7 @@ BlockMorph.prototype.mapHeader = function (aString, key) {
         if (this.definition) { // custom block
             this.definition.codeHeader = aString;
         } else {
-            StageMorph.prototype.codeHeaders[sel] = aString;
+            Stage.prototype.codeHeaders[sel] = aString;
         }
     }
 };
@@ -3016,7 +3016,7 @@ BlockMorph.prototype.mapCode = function (aString, key) {
         if (this.definition) { // custom block
             this.definition.codeMapping = aString;
         } else {
-            StageMorph.prototype.codeMappings[sel] = aString;
+            Stage.prototype.codeMappings[sel] = aString;
         }
     }
 };
@@ -3037,7 +3037,7 @@ BlockMorph.prototype.mappedCode = function (definitions) {
         parts = [];
     code = key === 'reportGetVar' ? this.blockSpec
             : this.definition ? this.definition.codeMapping || ''
-                    : StageMorph.prototype.codeMappings[key] || '';
+                    : Stage.prototype.codeMappings[key] || '';
 
     // map header
     if (key !== 'reportGetVar' && !defs.hasOwnProperty(defKey)) {
@@ -3071,7 +3071,7 @@ BlockMorph.prototype.mappedCode = function (definitions) {
             }
             defs[defKey] = header;
         } else {
-            defs[defKey] = StageMorph.prototype.codeHeaders[defKey];
+            defs[defKey] = Stage.prototype.codeHeaders[defKey];
         }
     }
 
@@ -3120,7 +3120,7 @@ BlockMorph.prototype.mappedCode = function (definitions) {
 
 BlockMorph.prototype.codeDefinitionHeader = function () {
     var block = this.definition ? new PrototypeHatBlockMorph(this.definition)
-            : SpriteMorph.prototype.blockForSelector(this.selector),
+            : Sprite.prototype.blockForSelector(this.selector),
         hat = new HatBlockMorph(),
         count = 1;
 
@@ -3142,7 +3142,7 @@ BlockMorph.prototype.codeDefinitionHeader = function () {
 
 BlockMorph.prototype.codeMappingHeader = function () {
     var block = this.definition ? this.definition.blockInstance()
-            : SpriteMorph.prototype.blockForSelector(this.selector),
+            : Sprite.prototype.blockForSelector(this.selector),
         hat = new HatBlockMorph(),
         count = 1;
 
@@ -3246,7 +3246,7 @@ BlockMorph.prototype.refactorThisVar = function (justTheTemplate) {
                     detect(
                         stage.children,
                         function (any) {
-                            return any instanceof SpriteMorph && 
+                            return any instanceof Sprite && 
                                 any.hasSpriteVariable(newName);
                         })
                     ) {
@@ -3280,7 +3280,7 @@ BlockMorph.prototype.refactorThisVar = function (justTheTemplate) {
                     });
 
                     stage.forAllChildren(function (child) {
-                        if (child instanceof SpriteMorph) {
+                        if (child instanceof Sprite) {
                             child.refactorVariableInstances(
                                 oldName,
                                 newName,
@@ -3531,7 +3531,7 @@ BlockMorph.prototype.fixBlockColor = function (nearestBlock, isForced) {
         }
     }
     if (!nearest) { // top block
-        clr = SpriteMorph.prototype.blockColor[this.category];
+        clr = Sprite.prototype.blockColor[this.category];
         if (!this.color.eq(clr)) {
             this.alternateBlockColor();
         }
@@ -3540,7 +3540,7 @@ BlockMorph.prototype.fixBlockColor = function (nearestBlock, isForced) {
             this.alternateBlockColor();
         }
     } else if (this.category && !this.color.eq(
-            SpriteMorph.prototype.blockColor[this.category]
+            Sprite.prototype.blockColor[this.category]
         )) {
         this.alternateBlockColor();
     }
@@ -3550,7 +3550,7 @@ BlockMorph.prototype.fixBlockColor = function (nearestBlock, isForced) {
 };
 
 BlockMorph.prototype.forceNormalColoring = function () {
-    var clr = SpriteMorph.prototype.blockColor[this.category];
+    var clr = Sprite.prototype.blockColor[this.category];
     this.setColor(clr, true); // silently
     this.setLabelColor(
         new Color(255, 255, 255),
@@ -3561,7 +3561,7 @@ BlockMorph.prototype.forceNormalColoring = function () {
 };
 
 BlockMorph.prototype.alternateBlockColor = function () {
-    var clr = SpriteMorph.prototype.blockColor[this.category];
+    var clr = Sprite.prototype.blockColor[this.category];
 
     if (this.color.eq(clr)) {
         this.setColor(
@@ -3578,13 +3578,13 @@ BlockMorph.prototype.alternateBlockColor = function () {
 
 BlockMorph.prototype.ghost = function () {
     this.setColor(
-        SpriteMorph.prototype.blockColor[this.category].lighter(35)
+        Sprite.prototype.blockColor[this.category].lighter(35)
     );
 };
 
 BlockMorph.prototype.fixLabelColor = function () {
     if (this.zebraContrast > 0 && this.category) {
-        var clr = SpriteMorph.prototype.blockColor[this.category];
+        var clr = Sprite.prototype.blockColor[this.category];
         if (this.color.eq(clr)) {
             this.setLabelColor(
                 new Color(255, 255, 255),
@@ -3686,7 +3686,7 @@ BlockMorph.prototype.mouseClickLeft = function () {
         return top.mouseClickLeft();
     }
     if (receiver) {
-        stage = receiver.parentThatIsA(StageMorph);
+        stage = receiver.parentThatIsA(Stage);
         if (stage) {
             stage.threads.toggleProcess(top);
         }
@@ -3716,7 +3716,7 @@ BlockMorph.prototype.activeProcess = function () {
         return null;
     }
     if (receiver) {
-        stage = receiver.parentThatIsA(StageMorph);
+        stage = receiver.parentThatIsA(Stage);
         if (stage) {
             return stage.threads.findProcess(top);
         }
@@ -3909,7 +3909,7 @@ BlockMorph.prototype.snap = function () {
     if (this.selector === 'receiveCondition') {
         receiver = top.receiver();
         if (receiver) {
-            stage = receiver.parentThatIsA(StageMorph);
+            stage = receiver.parentThatIsA(Stage);
             if (stage) {
                 stage.enableCustomHatBlocks = true;
                 stage.threads.pauseCustomHatBlocks = false;
@@ -5110,7 +5110,7 @@ ReporterBlockMorph.prototype.exportResultPic = function () {
         stage;
     if (top !== this) {return; }
     if (receiver) {
-        stage = receiver.parentThatIsA(StageMorph);
+        stage = receiver.parentThatIsA(Stage);
         if (stage) {
             stage.threads.stopProcess(top);
             stage.threads.startProcess(top, false, true);
@@ -5544,7 +5544,7 @@ RingMorph.prototype.embed = function (aBlock, inputNames) {
     var slot;
 
     // set my color
-    this.color = SpriteMorph.prototype.blockColor.other;
+    this.color = Sprite.prototype.blockColor.other;
     this.isDraggable = true;
 
     // set my type, selector, and nested block:
@@ -5733,7 +5733,7 @@ ScriptsMorph.prototype.step = function () {
         this.feedbackMorph.parent = null;
     }
     if (this.focus && (!world.keyboardReceiver ||
-            world.keyboardReceiver instanceof StageMorph)) {
+            world.keyboardReceiver instanceof Stage)) {
         this.focus.getFocus(world);
     }
     if (hand.children.length === 0) {
@@ -5777,9 +5777,9 @@ ScriptsMorph.prototype.showReporterDropFeedback = function (block, hand) {
     this.add(this.feedbackMorph);
     if (target instanceof MultiArgMorph) {
         this.feedbackMorph.color =
-            SpriteMorph.prototype.blockColor.lists.copy();
+            Sprite.prototype.blockColor.lists.copy();
         this.feedbackMorph.borderColor =
-            SpriteMorph.prototype.blockColor.lists;
+            Sprite.prototype.blockColor.lists;
     } else {
         this.feedbackMorph.color = this.feedbackColor.copy();
         this.feedbackMorph.borderColor = this.feedbackColor;
@@ -6025,7 +6025,7 @@ ScriptsMorph.prototype.userMenu = function () {
         myself = this,
         obj = this.owner,
         hasUndropQueue,
-        stage = obj.parentThatIsA(StageMorph);
+        stage = obj.parentThatIsA(Stage);
 
     if (!ide) {
         blockEditor = this.parentThatIsA(BlockEditorMorph);
@@ -6599,7 +6599,7 @@ ArgMorph.prototype.reactToSliderEdit = function () {
             return;
         }
         if (receiver) {
-            stage = receiver.parentThatIsA(StageMorph);
+            stage = receiver.parentThatIsA(Stage);
             if (stage && (stage.isThreadSafe ||
                     Process.prototype.enableSingleStepping)) {
                 stage.threads.startProcess(top, stage.isThreadSafe);
@@ -7340,7 +7340,7 @@ CSlotMorph.prototype.getSpec = function () {
 };
 
 CSlotMorph.prototype.mappedCode = function (definitions) {
-    var code = StageMorph.prototype.codeMappings.reify || '<#1>',
+    var code = Stage.prototype.codeMappings.reify || '<#1>',
         codeLines = code.split('\n'),
         nested = this.nestedBlock(),
         part = nested ? nested.mappedCode(definitions) : '',
@@ -7895,7 +7895,7 @@ InputSlotMorph.prototype.menuFromDict = function (choices, noEmptyOption) {
 InputSlotMorph.prototype.messagesMenu = function () {
     var dict = {},
         rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         myself = this,
         allNames = [];
 
@@ -7928,7 +7928,7 @@ InputSlotMorph.prototype.messagesMenu = function () {
 InputSlotMorph.prototype.messagesReceivedMenu = function () {
     var dict = {'any message': ['any message']},
         rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         myself = this,
         allNames = [];
 
@@ -7963,11 +7963,11 @@ InputSlotMorph.prototype.collidablesMenu = function () {
             'pen trails' : ['pen trails']
         },
         rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         allNames = [];
 
     stage.children.forEach(function (morph) {
-        if (morph instanceof SpriteMorph && !morph.isClone) {
+        if (morph instanceof Sprite && !morph.isClone) {
             if (morph.name !== rcvr.name) {
                 allNames = allNames.concat(morph.name);
             }
@@ -7987,11 +7987,11 @@ InputSlotMorph.prototype.distancesMenu = function () {
             'mouse-pointer' : ['mouse-pointer']
         },
         rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         allNames = [];
 
     stage.children.forEach(function (morph) {
-        if (morph instanceof SpriteMorph) {
+        if (morph instanceof Sprite) {
             if (morph.name !== rcvr.name) {
                 allNames = allNames.concat(morph.name);
             }
@@ -8009,14 +8009,14 @@ InputSlotMorph.prototype.distancesMenu = function () {
 InputSlotMorph.prototype.clonablesMenu = function () {
     var dict = {},
         rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         allNames = [];
 
-    if (rcvr instanceof SpriteMorph) {
+    if (rcvr instanceof Sprite) {
         dict.myself = ['myself'];
     }
     stage.children.forEach(function (morph) {
-        if (morph instanceof SpriteMorph && !morph.isClone) {
+        if (morph instanceof Sprite && !morph.isClone) {
             allNames = allNames.concat(morph.name);
         }
     });
@@ -8031,13 +8031,13 @@ InputSlotMorph.prototype.clonablesMenu = function () {
 
 InputSlotMorph.prototype.objectsMenu = function () {
     var rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         dict = {},
         allNames = [];
 
     dict[stage.name] = stage.name;
     stage.children.forEach(function (morph) {
-        if (morph instanceof SpriteMorph) {
+        if (morph instanceof Sprite) {
             allNames.push(morph.name);
         }
     });
@@ -8057,7 +8057,7 @@ InputSlotMorph.prototype.typesMenu = function () {
         Boolean : ['Boolean'],
         list : ['list']
     };
-    if (SpriteMorph.prototype.enableFirstClass) {
+    if (Sprite.prototype.enableFirstClass) {
         dict.sprite = ['sprite'];
     }
     dict.command = ['command'];
@@ -8074,12 +8074,12 @@ InputSlotMorph.prototype.gettablesMenu = function () {
         clones : ['clones'],
         'other clones' : ['other clones']
     };
-    if (SpriteMorph.prototype.enableNesting) {
+    if (Sprite.prototype.enableNesting) {
         dict.parts = ['parts'];
         dict.anchor = ['anchor'];
     }
     dict.stage = ['stage'];
-    if (StageMorph.prototype.enableInheritance) {
+    if (Stage.prototype.enableInheritance) {
         dict.children = ['children'];
         dict.parent = ['parent'];
     }
@@ -8096,7 +8096,7 @@ InputSlotMorph.prototype.attributesMenu = function () {
     var block = this.parentThatIsA(BlockMorph),
         objName = block.inputs()[1].evaluate(),
         rcvr = block.receiver(),
-        stage = rcvr.parentThatIsA(StageMorph),
+        stage = rcvr.parentThatIsA(Stage),
         obj,
         dict = {},
         varNames = [];
@@ -8114,7 +8114,7 @@ InputSlotMorph.prototype.attributesMenu = function () {
     if (!obj) {
         return dict;
     }
-    if (obj instanceof SpriteMorph) {
+    if (obj instanceof Sprite) {
         dict = {
             'x position' : ['x position'],
             'y position' : ['y position'],
@@ -8148,7 +8148,7 @@ InputSlotMorph.prototype.costumesMenu = function () {
     var rcvr = this.parentThatIsA(BlockMorph).receiver(),
         dict,
         allNames = [];
-    if (rcvr instanceof SpriteMorph) {
+    if (rcvr instanceof Sprite) {
         dict = {Turtle : ['Turtle']};
     } else { // stage
         dict = {Empty : ['Empty']};
@@ -8334,7 +8334,7 @@ InputSlotMorph.prototype.freshTextEdit = function (aStringOrTextMorph) {
 
 InputSlotMorph.prototype.userMenu = function () {
     var menu = new MenuMorph(this);
-    if (!StageMorph.prototype.enableCodeMapping) {
+    if (!Stage.prototype.enableCodeMapping) {
         return this.parent.userMenu();
     }
     if (this.isNumeric) {
@@ -8364,12 +8364,12 @@ InputSlotMorph.prototype.mapStringToCode = function () {
     new DialogBoxMorph(
         this,
         function (code) {
-            StageMorph.prototype.codeMappings.string = code;
+            Stage.prototype.codeMappings.string = code;
         },
         this
     ).promptCode(
         'Code mapping - String <#1>',
-        StageMorph.prototype.codeMappings.string || '',
+        Stage.prototype.codeMappings.string || '',
         this.world()
     );
 };
@@ -8379,12 +8379,12 @@ InputSlotMorph.prototype.mapNumberToCode = function () {
     new DialogBoxMorph(
         this,
         function (code) {
-            StageMorph.prototype.codeMappings.number = code;
+            Stage.prototype.codeMappings.number = code;
         },
         this
     ).promptCode(
         'Code mapping - Number <#1>',
-        StageMorph.prototype.codeMappings.number || '',
+        Stage.prototype.codeMappings.number || '',
         this.world()
     );
 };
@@ -8395,7 +8395,7 @@ InputSlotMorph.prototype.mappedCode = function () {
         code;
 
     if (this.isNumeric) {
-        code = StageMorph.prototype.codeMappings.number || '<#1>';
+        code = Stage.prototype.codeMappings.number || '<#1>';
         return code.replace(/<#1>/g, val);
     }
     if (!isNaN(parseFloat(val))) {return val; }
@@ -8406,7 +8406,7 @@ InputSlotMorph.prototype.mappedCode = function () {
         )) {
         return val;
     }
-    code = StageMorph.prototype.codeMappings.string || '<#1>';
+    code = Stage.prototype.codeMappings.string || '<#1>';
     return code.replace(/<#1>/g, val);
 };
 
@@ -8743,7 +8743,7 @@ TemplateSlotMorph.prototype.init = function (name) {
     template.isDraggable = false;
     template.isTemplate = true;
     if (modules.objects !== undefined) {
-        template.color = SpriteMorph.prototype.blockColor.variables;
+        template.color = Sprite.prototype.blockColor.variables;
         template.category = 'variables';
     } else {
         template.color = new Color(243, 118, 29);
@@ -8979,7 +8979,7 @@ BooleanSlotMorph.prototype.mouseLeave = function () {
 
 BooleanSlotMorph.prototype.userMenu = function () {
     var menu = new MenuMorph(this);
-    if (!StageMorph.prototype.enableCodeMapping) {
+    if (!Stage.prototype.enableCodeMapping) {
         return this.parent.userMenu();
     }
     if (this.evaluate() === true) {
@@ -9009,12 +9009,12 @@ BooleanSlotMorph.prototype.mapTrueToCode = function () {
     new DialogBoxMorph(
         this,
         function (code) {
-            StageMorph.prototype.codeMappings['true'] = code;
+            Stage.prototype.codeMappings['true'] = code;
         },
         this
     ).promptCode(
         'Code mapping - true',
-        StageMorph.prototype.codeMappings['true'] || 'true',
+        Stage.prototype.codeMappings['true'] || 'true',
         this.world()
     );
 };
@@ -9024,21 +9024,21 @@ BooleanSlotMorph.prototype.mapFalseToCode = function () {
     new DialogBoxMorph(
         this,
         function (code) {
-            StageMorph.prototype.codeMappings['false'] = code;
+            Stage.prototype.codeMappings['false'] = code;
         },
         this
     ).promptCode(
         'Code mapping - false',
-        StageMorph.prototype.codeMappings['false'] || 'false',
+        Stage.prototype.codeMappings['false'] || 'false',
         this.world()
     );
 };
 
 BooleanSlotMorph.prototype.mappedCode = function () {
     if (this.evaluate() === true) {
-        return StageMorph.prototype.codeMappings.boolTrue || 'true';
+        return Stage.prototype.codeMappings.boolTrue || 'true';
     }
-    return StageMorph.prototype.codeMappings.boolFalse || 'false';
+    return Stage.prototype.codeMappings.boolFalse || 'false';
 };
 
 // BooleanSlotMorph drawing:
@@ -11457,7 +11457,7 @@ MultiArgMorph.prototype.userMenu = function () {
         block = this.parentThatIsA(BlockMorph),
         key = '',
         myself = this;
-    if (!StageMorph.prototype.enableCodeMapping) {
+    if (!Stage.prototype.enableCodeMapping) {
         return this.parent.userMenu();
     }
     if (block) {
@@ -11507,12 +11507,12 @@ MultiArgMorph.prototype.mapToCode = function (key, label) {
     new DialogBoxMorph(
         this,
         function (code) {
-            StageMorph.prototype.codeMappings[key] = code;
+            Stage.prototype.codeMappings[key] = code;
         },
         this
     ).promptCode(
         'Code mapping - ' + label,
-        StageMorph.prototype.codeMappings[key] || '',
+        Stage.prototype.codeMappings[key] || '',
         this.world()
     );
 };
@@ -11535,9 +11535,9 @@ MultiArgMorph.prototype.mappedCode = function (definitions) {
         }
     }
 
-    code = StageMorph.prototype.codeMappings[key + 'list'] || '<#1>';
-    itemCode = StageMorph.prototype.codeMappings[key + 'item'] || '<#1>';
-    delim = StageMorph.prototype.codeMappings[key + 'delim'] || ' ';
+    code = Stage.prototype.codeMappings[key + 'list'] || '<#1>';
+    itemCode = Stage.prototype.codeMappings[key + 'item'] || '<#1>';
+    delim = Stage.prototype.codeMappings[key + 'delim'] || ' ';
 
     this.inputs().forEach(function (input) {
         parts.push(itemCode.replace(/<#1>/g, input.mappedCode(definitions)));
@@ -13231,7 +13231,7 @@ ScriptFocusMorph.prototype.insertBlock = function (block) {
     // register generic hat blocks
     if (block.selector === 'receiveCondition') {
         if (this.editor.owner) {
-            stage = this.editor.owner.parentThatIsA(StageMorph);
+            stage = this.editor.owner.parentThatIsA(Stage);
             if (stage) {
                 stage.enableCustomHatBlocks = true;
                 stage.threads.pauseCustomHatBlocks = false;
@@ -13261,7 +13261,7 @@ ScriptFocusMorph.prototype.insertVariableGetter = function () {
     }
     vars = InputSlotMorph.prototype.getVarNamesDict.call(this.element);
     Object.keys(vars).forEach(function (vName) {
-        var block = SpriteMorph.prototype.variableBlock(vName);
+        var block = Sprite.prototype.variableBlock(vName);
         block.addShadow(new Point(3, 3));
         menu.addItem(
             block,
