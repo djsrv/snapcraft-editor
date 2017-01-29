@@ -235,6 +235,7 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.spriteBar = null;
     this.spriteEditor = null;
     this.stage = null;
+    this.createStage();
     this.stageHandle = null;
     this.corralBar = null;
     this.corral = null;
@@ -506,11 +507,9 @@ IDE_Morph.prototype.buildPanes = function () {
     this.createControlBar();
     this.createCategories();
     this.createPalette();
-    this.createStage();
     this.createSpriteBar();
     this.createSpriteEditor();
-    this.createCorralBar();
-    this.createCorral();
+    this.createPaletteHandle();
 };
 
 IDE_Morph.prototype.createLogo = function () {
@@ -570,8 +569,6 @@ IDE_Morph.prototype.createControlBar = function () {
         startButton,
         projectButton,
         settingsButton,
-        stageSizeButton,
-        appModeButton,
         cloudButton,
         x,
         colors = [
@@ -592,70 +589,6 @@ IDE_Morph.prototype.createControlBar = function () {
         this.world().fillPage();
     };
     this.add(this.controlBar);
-
-    //smallStageButton
-    button = new ToggleButtonMorph(
-        null, //colors,
-        myself, // the IDE is the target
-        'toggleStageSize',
-        [
-            new SymbolMorph('smallStage', 14),
-            new SymbolMorph('normalStage', 14)
-        ],
-        function () {  // query
-            return myself.isSmallStage;
-        }
-    );
-
-    button.corner = 12;
-    button.color = colors[0];
-    button.highlightColor = colors[1];
-    button.pressColor = colors[2];
-    button.labelMinExtent = new Point(36, 18);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.drawNew();
-    // button.hint = 'stage size\nsmall & normal';
-    button.fixLayout();
-    button.refresh();
-    stageSizeButton = button;
-    this.controlBar.add(stageSizeButton);
-    this.controlBar.stageSizeButton = button; // for refreshing
-
-    //appModeButton
-    button = new ToggleButtonMorph(
-        null, //colors,
-        myself, // the IDE is the target
-        'toggleAppMode',
-        [
-            new SymbolMorph('fullScreen', 14),
-            new SymbolMorph('normalScreen', 14)
-        ],
-        function () {  // query
-            return myself.isAppMode;
-        }
-    );
-
-    button.corner = 12;
-    button.color = colors[0];
-    button.highlightColor = colors[1];
-    button.pressColor = colors[2];
-    button.labelMinExtent = new Point(36, 18);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.drawNew();
-    // button.hint = 'app & edit\nmodes';
-    button.fixLayout();
-    button.refresh();
-    appModeButton = button;
-    this.controlBar.add(appModeButton);
-    this.controlBar.appModeButton = appModeButton; // for refreshing
 
     // stopButton
     button = new ToggleButtonMorph(
@@ -846,22 +779,8 @@ IDE_Morph.prototype.createControlBar = function () {
             }
         );
 
-        x = Math.min(
-            startButton.left() - (3 * padding + 2 * stageSizeButton.width()),
-            myself.right() - Stage.prototype.dimensions.x *
-                (myself.isSmallStage ? myself.stageRatio : 1)
-        );
-        [stageSizeButton, appModeButton].forEach(
-            function (button) {
-                x += padding;
-                button.setCenter(myself.controlBar.center());
-                button.setLeft(x);
-                x += button.width();
-            }
-        );
-
         slider.setCenter(myself.controlBar.center());
-        slider.setRight(stageSizeButton.left() - padding);
+        slider.setRight(startButton.left() - padding);
 
         settingsButton.setCenter(myself.controlBar.center());
         settingsButton.setLeft(this.left());
@@ -885,7 +804,7 @@ IDE_Morph.prototype.createControlBar = function () {
         }
         this.refreshResumeSymbol();
     };
-    
+
     this.controlBar.refreshResumeSymbol = function () {
         var pauseSymbols;
         if (Process.prototype.enableSingleStepping &&
@@ -1095,19 +1014,10 @@ IDE_Morph.prototype.createPaletteHandle = function () {
 
 IDE_Morph.prototype.createStage = function () {
     // assumes that the logo pane has already been created
-    if (this.stage) {this.stage.destroy(); }
-    Stage.prototype.frameRate = 0;
-    this.stage = new Stage(this.globalVariables);
-    this.stage.setExtent(this.stage.dimensions); // dimensions are fixed
+    this.stage = new Stage(this, this.globalVariables);
     if (this.currentSprite instanceof Sprite) {
-        this.currentSprite.setPosition(
-            this.stage.center().subtract(
-                this.currentSprite.extent().divideBy(2)
-            )
-        );
-        this.stage.add(this.currentSprite);
+        this.stage.addChild(this.currentSprite);
     }
-    this.add(this.stage);
 };
 
 IDE_Morph.prototype.createStageHandle = function () {
@@ -1613,38 +1523,23 @@ IDE_Morph.prototype.fixLayout = function (situation) {
     this.palette.setWidth(this.paletteWidth);
 
     if (situation !== 'refreshPalette') {
-        // stage
-        if (this.isAppMode) {
-            this.stage.setScale(Math.floor(Math.min(
-                (this.width() - padding * 2) / this.stage.dimensions.x,
-                (this.height() - this.controlBar.height() * 2 - padding * 2)
-                    / this.stage.dimensions.y
-            ) * 10) / 10);
-            this.stage.setCenter(this.center());
-        } else {
-            this.stage.setScale(this.isSmallStage ? this.stageRatio : 1);
-            this.stage.setTop(this.logo.bottom() + padding);
-            this.stage.setRight(this.right());
-            maxPaletteWidth = Math.max(
-                200,
-                this.width() -
-                    this.stage.width() -
-                    this.spriteBar.tabBar.width() -
-                    (this.padding * 2)
-            );
-            if (this.paletteWidth > maxPaletteWidth) {
-                this.paletteWidth = maxPaletteWidth;
-                this.fixLayout();
-            }
-            this.stageHandle.fixLayout();
-            this.paletteHandle.fixLayout();
+        maxPaletteWidth = Math.max(
+            200,
+            this.width() -
+                this.spriteBar.tabBar.width() -
+                (this.padding * 2)
+        );
+        if (this.paletteWidth > maxPaletteWidth) {
+            this.paletteWidth = maxPaletteWidth;
+            this.fixLayout();
         }
+        this.paletteHandle.fixLayout();
 
         // spriteBar
         this.spriteBar.setLeft(this.paletteWidth + padding);
         this.spriteBar.setTop(this.logo.bottom() + padding);
         this.spriteBar.setExtent(new Point(
-            Math.max(0, this.stage.left() - padding - this.spriteBar.left()),
+            Math.max(0, this.width() - padding - this.spriteBar.left()),
             this.categories.bottom() - this.spriteBar.top() - padding
         ));
         this.spriteBar.fixLayout();
@@ -1656,19 +1551,6 @@ IDE_Morph.prototype.fixLayout = function (situation) {
                 this.spriteBar.width(),
                 this.bottom() - this.spriteEditor.top()
             ));
-        }
-
-        // corralBar
-        this.corralBar.setLeft(this.stage.left());
-        this.corralBar.setTop(this.stage.bottom() + padding);
-        this.corralBar.setWidth(this.stage.width());
-
-        // corral
-        if (!contains(['selectSprite', 'tabEditor'], situation)) {
-            this.corral.setPosition(this.corralBar.bottomLeft());
-            this.corral.setWidth(this.stage.width());
-            this.corral.setHeight(this.bottom() - this.corral.top());
-            this.corral.fixLayout();
         }
     }
 
@@ -3408,9 +3290,6 @@ IDE_Morph.prototype.editProjectNotes = function () {
 
 IDE_Morph.prototype.newProject = function () {
     this.source = SnapCloud.username ? 'cloud' : 'local';
-    if (this.stage) {
-        this.stage.destroy();
-    }
     if (location.hash.substr(0, 6) !== '#lang:') {
         location.hash = '';
     }
@@ -3430,8 +3309,6 @@ IDE_Morph.prototype.newProject = function () {
     this.setProjectName('');
     this.projectNotes = '';
     this.createStage();
-    this.add(this.stage);
-    this.createCorral();
     this.selectSprite(this.stage.children[0]);
     this.fixLayout();
 };
@@ -4214,7 +4091,7 @@ IDE_Morph.prototype.saveFileAs = function (
 IDE_Morph.prototype.saveCanvasAs = function (canvas, fileName, newWindow) {
     // Export a Canvas object as a PNG image
     // Note: This commented out due to poor browser support.
-    // cavas.toBlob() is currently supported in Firefox, IE, Chrome but 
+    // cavas.toBlob() is currently supported in Firefox, IE, Chrome but
     // browsers prevent easily saving the generated files.
     // Do not re-enable without revisiting issue #1191
     // if (canvas.toBlob) {
@@ -4224,7 +4101,7 @@ IDE_Morph.prototype.saveCanvasAs = function (canvas, fileName, newWindow) {
     //     });
     //     return;
     // }
-    
+
     this.saveFileAs(canvas.toDataURL(), 'image/png', fileName, newWindow);
 };
 
@@ -4370,7 +4247,6 @@ IDE_Morph.prototype.toggleDynamicInputLabels = function () {
     Sprite.prototype.initBlocks();
     this.spriteBar.tabBar.tabTo('scripts');
     this.createCategories();
-    this.createCorralBar();
     this.openProjectString(projectData);
 };
 
@@ -4427,9 +4303,6 @@ IDE_Morph.prototype.toggleAppMode = function (appMode) {
             this.controlBar.settingsButton,
             this.controlBar.stageSizeButton,
             this.paletteHandle,
-            this.stageHandle,
-            this.corral,
-            this.corralBar,
             this.spriteEditor,
             this.spriteBar,
             this.palette,
@@ -4442,7 +4315,6 @@ IDE_Morph.prototype.toggleAppMode = function (appMode) {
     if (this.isAppMode) {
         this.setColor(this.appModeColor);
         this.controlBar.setColor(this.color);
-        this.controlBar.appModeButton.refresh();
         elements.forEach(function (e) {
             e.hide();
         });
@@ -4638,7 +4510,6 @@ IDE_Morph.prototype.reflectLanguage = function (lang, callback) {
     Sprite.prototype.initBlocks();
     this.spriteBar.tabBar.tabTo('scripts');
     this.createCategories();
-    this.createCorralBar();
     this.fixLayout();
     if (this.loadNewProject) {
         this.newProject();
@@ -4751,7 +4622,6 @@ IDE_Morph.prototype.setBlocksScale = function (num) {
     Sprite.prototype.initBlocks();
     this.spriteBar.tabBar.tabTo('scripts');
     this.createCategories();
-    this.createCorralBar();
     this.fixLayout();
     this.openProjectString(projectData);
     this.saveSetting('zoom', num);
@@ -5631,7 +5501,7 @@ ProjectDialogMorph.prototype.buildFilterField = function () {
     this.filterField.reactToKeystroke = function (evt) {
         var text = this.getValue();
 
-        myself.listField.elements = 
+        myself.listField.elements =
             myself.projectList.filter(function (aProject) {
                 var name,
                     notes;
@@ -6259,7 +6129,7 @@ ProjectDialogMorph.prototype.fixLayout = function () {
 
 // LibraryImportDialogMorph ///////////////////////////////////////////
 // I am preview dialog shown before importing a library.
-// I inherit from a DialogMorph but look similar to 
+// I inherit from a DialogMorph but look similar to
 // ProjectDialogMorph, and BlockImportDialogMorph
 
 LibraryImportDialogMorph.prototype = new DialogBoxMorph();
@@ -6494,7 +6364,7 @@ LibraryImportDialogMorph.prototype.fixLayout = function () {
     Morph.prototype.trackChanges = oldFlag;
     this.changed();
 };
-    
+
 // Library Cache Utilities.
 LibraryImportDialogMorph.prototype.hasCached = function (key) {
     return this.libraryCache.hasOwnProperty(key);
@@ -8133,8 +8003,7 @@ PaletteHandleMorph.prototype.mouseEnter
 
 PaletteHandleMorph.prototype.mouseLeave
     = StageHandleMorph.prototype.mouseLeave;
-    
+
 PaletteHandleMorph.prototype.mouseDoubleClick = function () {
     this.target.parentThatIsA(IDE_Morph).setPaletteWidth(200);
 };
-

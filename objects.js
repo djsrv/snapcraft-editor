@@ -106,11 +106,11 @@ function isSnapObject(thing) {
 
 // I am a scriptable object
 
-// Sprite inherits from PenMorph:
+// Sprite inherits from Node:
 
-Sprite.prototype = new PenMorph();
+Sprite.prototype = new Node();
 Sprite.prototype.constructor = Sprite;
-Sprite.uber = PenMorph.prototype;
+Sprite.uber = Node.prototype;
 
 // Sprite settings
 
@@ -1381,9 +1381,6 @@ Sprite.prototype.init = function (globals) {
     this.isDraggable = true;
     this.isDown = false;
     this.heading = 90;
-    this.changed();
-    this.drawNew();
-    this.changed();
 };
 
 // Sprite duplicating (fullCopy)
@@ -1685,7 +1682,8 @@ Sprite.prototype.variableBlock = function (varName) {
 Sprite.prototype.blockTemplates = function (category) {
     var blocks = [], myself = this, varNames, button,
         cat = category || 'motion', txt,
-        inheritedVars = this.inheritedVariableNames();
+        inheritedVars = this.inheritedVariableNames(),
+        world = this.parentThatIsA(Stage).ide.world();
 
     function block(selector) {
         if (Stage.prototype.hiddenPrimitives[selector]) {
@@ -1823,7 +1821,7 @@ Sprite.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
@@ -1859,7 +1857,7 @@ Sprite.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
@@ -1987,7 +1985,7 @@ Sprite.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
 
             blocks.push('-');
             txt = new TextMorph(localize(
@@ -2048,7 +2046,7 @@ Sprite.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
@@ -2151,7 +2149,7 @@ Sprite.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
@@ -4635,11 +4633,11 @@ Sprite.prototype.allLocalBlockInstances = function (definition) {
 
 Sprite.prototype.allEditorBlockInstances = function (definition) {
     var inBlockEditors = [],
-        world = this.world();
+        world = this.parentThatIsA(Stage).ide.world();
 
     if (!world) {return []; } // when copying a sprite
 
-    this.world().children.forEach(function (morph) {
+    world.children.forEach(function (morph) {
         if (morph instanceof BlockEditorMorph) {
             morph.body.contents.allChildren().forEach(function (block) {
                 if (!block.isPrototype
@@ -4961,45 +4959,9 @@ Sprite.prototype.thumbnail = function (extentPoint) {
     my thumbnail representation keeping the originial aspect ratio
 */
     var src = this.image, // at this time sprites aren't composite morphs
-        scale = Math.min(
-            (extentPoint.x / src.width),
-            (extentPoint.y / src.height)
-        ),
-        xOffset = (extentPoint.x - (src.width * scale)) / 2,
-        yOffset = (extentPoint.y - (src.height * scale)) / 2,
         trg = newCanvas(extentPoint),
         ctx = trg.getContext('2d');
 
-    function xOut(style, alpha, width) {
-        var inset = Math.min(extentPoint.x, extentPoint.y) / 10;
-        ctx.strokeStyle = style;
-        ctx.globalAlpha = alpha;
-        ctx.compositeOperation = 'lighter';
-        ctx.lineWidth = width || 1;
-        ctx.moveTo(inset, inset);
-        ctx.lineTo(trg.width - inset, trg.height - inset);
-        ctx.moveTo(inset, trg.height - inset);
-        ctx.lineTo(trg.width - inset, inset);
-        ctx.stroke();
-    }
-
-    ctx.save();
-    if (this.isCorpse) {
-        ctx.globalAlpha = 0.3;
-    }
-    if (src.width && src.height) {
-        ctx.scale(scale, scale);
-        ctx.drawImage(
-            src,
-            Math.floor(xOffset / scale),
-            Math.floor(yOffset / scale)
-        );
-    }
-    if (this.isCorpse) {
-        ctx.restore();
-        xOut('white', 0.8, 6);
-        xOut('black', 0.8, 1);
-    }
     return trg;
 };
 
@@ -5329,9 +5291,9 @@ function SpriteHighlightMorph() {
 
 // Stage inherits from FrameMorph:
 
-Stage.prototype = new FrameMorph();
+Stage.prototype = new Node();
 Stage.prototype.constructor = Stage;
-Stage.uber = FrameMorph.prototype;
+Stage.uber = Node.prototype;
 
 // Stage preferences settings
 
@@ -5360,7 +5322,9 @@ function Stage(globals) {
     this.init(globals);
 }
 
-Stage.prototype.init = function (globals) {
+Stage.prototype.init = function (ide, globals) {
+    this.ide = ide;
+
     this.name = localize('Stage');
     this.threads = new ThreadManager();
     this.variables = new VariableFrame(globals || null, this);
@@ -5410,8 +5374,6 @@ Stage.prototype.init = function (globals) {
     Stage.uber.init.call(this);
 
     this.acceptsDrops = false;
-    this.setColor(new Color(255, 255, 255));
-    this.fps = this.frameRate;
 };
 
 // Stage scaling
@@ -6007,7 +5969,8 @@ Stage.prototype.editScripts = function () {
 
 Stage.prototype.blockTemplates = function (category) {
     var blocks = [], myself = this, varNames, button,
-        cat = category || 'motion', txt;
+        cat = category || 'motion', txt,
+        world = this.ide.world;
 
     function block(selector) {
         if (myself.hiddenPrimitives[selector]) {
@@ -6102,7 +6065,7 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
@@ -6138,7 +6101,7 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
@@ -6242,7 +6205,7 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
 
             blocks.push('-');
             txt = new TextMorph(localize(
@@ -6305,7 +6268,7 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(
                 'development mode \ndebugging primitives:'
@@ -6391,7 +6354,7 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (this.world().isDevMode) {
+        if (world.isDevMode) {
             blocks.push('-');
             txt = new TextMorph(localize(
                 'development mode \ndebugging primitives:'
