@@ -1191,7 +1191,7 @@ JaggedBlockMorph.prototype.init = function (spec) {
 
 // JaggedBlockMorph drawing:
 
-JaggedBlockMorph.prototype.drawNew = function () {
+JaggedBlockMorph.prototype.drawMorph = function () {
     var context;
 
     this.cachedClr = this.color.toString();
@@ -2530,7 +2530,7 @@ BlockLabelPlaceHolderMorph.prototype.init = function () {
 
 // BlockLabelPlaceHolderMorph drawing
 
-BlockLabelPlaceHolderMorph.prototype.drawNew = function () {
+BlockLabelPlaceHolderMorph.prototype.drawMorph = function () {
     var context, width, x, y, cx, cy;
 
     // set my text contents depending on the "plainLabel" flag

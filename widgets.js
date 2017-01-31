@@ -1729,7 +1729,7 @@ DialogBoxMorph.prototype.promptCode = function (
     frame.fontSize = InputFieldMorph.prototype.fontSize;
     frame.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     frame.contrast = InputFieldMorph.prototype.contrast;
-    frame.drawNew = InputFieldMorph.prototype.drawNew;
+    frame.drawNew = InputFieldMorph.prototype.drawMorph;
     frame.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     frame.addContents(text);
@@ -2610,7 +2610,7 @@ DialogBoxMorph.prototype.processKeyDown = function (event) {
 
 // DialogBoxMorph drawing
 
-DialogBoxMorph.prototype.drawNew = function () {
+DialogBoxMorph.prototype.drawMorph = function () {
     this.fullChanged();
     Morph.prototype.trackChanges = false;
     DialogBoxMorph.uber.removeShadow.call(this);
@@ -2901,7 +2901,7 @@ AlignmentMorph.prototype.init = function (orientation, padding) {
 
 // AlignmentMorph displaying and layout
 
-AlignmentMorph.prototype.drawNew = function () {
+AlignmentMorph.prototype.drawMorph = function () {
     this.image = newCanvas(new Point(1, 1));
     this.fixLayout();
 };
@@ -3188,7 +3188,7 @@ InputFieldMorph.prototype.normalizeSpaces
 
 // InputFieldMorph drawing:
 
-InputFieldMorph.prototype.drawNew = function () {
+InputFieldMorph.prototype.drawMorph = function () {
     var context, borderColor;
 
     this.fixLayout();

@@ -3260,7 +3260,7 @@ IDE_Morph.prototype.editProjectNotes = function () {
     frame.fontSize = InputFieldMorph.prototype.fontSize;
     frame.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     frame.contrast = InputFieldMorph.prototype.contrast;
-    frame.drawNew = InputFieldMorph.prototype.drawNew;
+    frame.drawNew = InputFieldMorph.prototype.drawMorph;
     frame.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     frame.addContents(text);
@@ -5279,7 +5279,7 @@ ProjectDialogMorph.prototype.buildContents = function () {
     this.listField.fontSize = InputFieldMorph.prototype.fontSize;
     this.listField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.listField.contrast = InputFieldMorph.prototype.contrast;
-    this.listField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.listField.drawNew = InputFieldMorph.prototype.drawMorph;
     this.listField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     this.body.add(this.listField);
@@ -5291,7 +5291,7 @@ ProjectDialogMorph.prototype.buildContents = function () {
     this.preview.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.preview.contrast = InputFieldMorph.prototype.contrast;
     this.preview.drawNew = function () {
-        InputFieldMorph.prototype.drawNew.call(this);
+        InputFieldMorph.prototype.drawMorph.call(this);
         if (this.texture) {
             this.drawTexture(this.texture);
         }
@@ -5324,7 +5324,7 @@ ProjectDialogMorph.prototype.buildContents = function () {
     this.notesField.fontSize = InputFieldMorph.prototype.fontSize;
     this.notesField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.notesField.contrast = InputFieldMorph.prototype.contrast;
-    this.notesField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.notesField.drawNew = InputFieldMorph.prototype.drawMorph;
     this.notesField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     this.notesField.acceptsDrops = false;
@@ -5584,7 +5584,7 @@ ProjectDialogMorph.prototype.setSource = function (source) {
     this.listField.fontSize = InputFieldMorph.prototype.fontSize;
     this.listField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.listField.contrast = InputFieldMorph.prototype.contrast;
-    this.listField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.listField.drawNew = InputFieldMorph.prototype.drawMorph;
     this.listField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     if (this.source === 'local') {
@@ -5706,7 +5706,7 @@ ProjectDialogMorph.prototype.installCloudProjectList = function (pl) {
     this.listField.fontSize = InputFieldMorph.prototype.fontSize;
     this.listField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.listField.contrast = InputFieldMorph.prototype.contrast;
-    this.listField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.listField.drawNew = InputFieldMorph.prototype.drawMorph;
     this.listField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     this.listField.action = function (item) {
@@ -6215,7 +6215,7 @@ LibraryImportDialogMorph.prototype.initializeLibraryDescription = function () {
     this.notesField.fontSize = InputFieldMorph.prototype.fontSize;
     this.notesField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.notesField.contrast = InputFieldMorph.prototype.contrast;
-    this.notesField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.notesField.drawNew = InputFieldMorph.prototype.drawMorph;
     this.notesField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     this.notesField.acceptsDrops = false;
@@ -6250,7 +6250,7 @@ LibraryImportDialogMorph.prototype.installLibrariesList = function () {
     this.listField.fontSize = InputFieldMorph.prototype.fontSize;
     this.listField.typeInPadding = InputFieldMorph.prototype.typeInPadding;
     this.listField.contrast = InputFieldMorph.prototype.contrast;
-    this.listField.drawNew = InputFieldMorph.prototype.drawNew;
+    this.listField.drawNew = InputFieldMorph.prototype.drawMorph;
     this.listField.drawRectBorder = InputFieldMorph.prototype.drawRectBorder;
 
     this.listField.action = function (item) {
@@ -7803,7 +7803,7 @@ StageHandleMorph.prototype.init = function (target) {
 
 // StageHandleMorph drawing:
 
-StageHandleMorph.prototype.drawNew = function () {
+StageHandleMorph.prototype.drawMorph = function () {
     this.normalImage = newCanvas(this.extent());
     this.highlightImage = newCanvas(this.extent());
     this.drawOnCanvas(
@@ -7952,8 +7952,8 @@ PaletteHandleMorph.prototype.init = function (target) {
 
 // PaletteHandleMorph drawing:
 
-PaletteHandleMorph.prototype.drawNew =
-    StageHandleMorph.prototype.drawNew;
+PaletteHandleMorph.prototype.drawMorph =
+    StageHandleMorph.prototype.drawMorph;
 
 PaletteHandleMorph.prototype.drawOnCanvas =
     StageHandleMorph.prototype.drawOnCanvas;

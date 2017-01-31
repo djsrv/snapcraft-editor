@@ -831,7 +831,7 @@
 
     Use the following template for a start:
 
-        MyMorph.prototype.drawNew = function() {
+        MyMorph.prototype.drawMorph = function() {
             var context;
             this.image = newCanvas(this.extent());
             context = this.image.getContext('2d');
@@ -1016,7 +1016,7 @@
     canvasses for simple shapes in order to save system resources and
     optimize performance. Examples are costumes and backgrounds in Snap.
     In Morphic you can create new canvas elements using
-    
+
         newCanvas(extentPoint [, nonRetinaFlag])
 
     If retina support is enabled such new canvasses will automatically be
@@ -1057,12 +1057,12 @@
     stepping mechanism.
 
     For an example how to use animations look at how the Morph's methods
-    
+
         glideTo()
         fadeTo()
 
     and
-    
+
         slideBackTo()
 
     are implemented.
@@ -1422,7 +1422,7 @@ function copy(target) {
     canvasses for simple shapes in order to save system resources and
     optimize performance. Examples are costumes and backgrounds in Snap.
     In Morphic you can create new canvas elements using
-    
+
         newCanvas(extentPoint [, nonRetinaFlag])
 
     If retina support is enabled such new canvasses will automatically be
@@ -1456,7 +1456,7 @@ function enableRetinaSupport() {
 
     NOTE: This implementation is not exhaustive; it only implements what is
     needed by the Snap! UI.
-    
+
     [Jens]: like all other retina screen support implementations I've seen
     Bartosz's patch also does not address putImageData() compatibility when
     mixing retina-enabled and non-retina canvasses. If you need to manipulate
@@ -1594,7 +1594,7 @@ function enableRetinaSupport() {
     contextProto.drawImage = function(image) {
         var pixelRatio = getPixelRatio(image),
             sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight;
-        
+
         // Different signatures of drawImage() method have different
         // parameter assignments.
         switch (arguments.length) {
@@ -1786,12 +1786,12 @@ function normalizeCanvas(aCanvas, getCopy) {
     stepping mechanism.
 
     For an example how to use animations look at how the Morph's methods
-    
+
         glideTo()
         fadeTo()
 
     and
-    
+
         slideBackTo()
 
     are implemented.
@@ -3223,6 +3223,12 @@ Morph.prototype.setColor = function (aColor) {
 // Morph displaying:
 
 Morph.prototype.drawNew = function () {
+    if (!SERVER_MODE) {
+        this.drawMorph();
+    }
+};
+
+Morph.prototype.drawMorph = function () {
     // initialize my surface property
     this.image = newCanvas(this.extent());
     var context = this.image.getContext('2d');
@@ -4442,7 +4448,7 @@ HandleMorph.prototype.init = function (
 
 // HandleMorph drawing:
 
-HandleMorph.prototype.drawNew = function () {
+HandleMorph.prototype.drawMorph = function () {
     this.normalImage = newCanvas(this.extent());
     this.highlightImage = newCanvas(this.extent());
     this.drawOnCanvas(
@@ -4704,7 +4710,7 @@ PenMorph.prototype.changed = function () {
 
 // PenMorph display:
 
-PenMorph.prototype.drawNew = function (facing) {
+PenMorph.prototype.drawMorph = function (facing) {
     // my orientation can be overridden with the "facing" parameter to
     // implement Scratch-style rotation styles
 
@@ -4916,7 +4922,7 @@ ColorPaletteMorph.prototype.init = function (target, size) {
     this.drawNew();
 };
 
-ColorPaletteMorph.prototype.drawNew = function () {
+ColorPaletteMorph.prototype.drawMorph = function () {
     var context, ext, x, y, h, l;
 
     ext = this.extent();
@@ -5025,7 +5031,7 @@ function GrayPaletteMorph(target, sizePoint) {
     );
 }
 
-GrayPaletteMorph.prototype.drawNew = function () {
+GrayPaletteMorph.prototype.drawMorph = function () {
     var context, ext, gradient;
 
     ext = this.extent();
@@ -5061,8 +5067,8 @@ ColorPickerMorph.prototype.init = function (defaultColor) {
     this.drawNew();
 };
 
-ColorPickerMorph.prototype.drawNew = function () {
-    ColorPickerMorph.uber.drawNew.call(this);
+ColorPickerMorph.prototype.drawMorph = function () {
+    ColorPickerMorph.uber.drawMorph.call(this);
     this.buildSubmorphs();
 };
 
@@ -5685,13 +5691,13 @@ BoxMorph.prototype.init = function (edge, border, borderColor) {
 
 // BoxMorph drawing:
 
-BoxMorph.prototype.drawNew = function () {
+BoxMorph.prototype.drawMorph = function () {
     var context;
 
     this.image = newCanvas(this.extent());
     context = this.image.getContext('2d');
     if ((this.edge === 0) && (this.border === 0)) {
-        BoxMorph.uber.drawNew.call(this);
+        BoxMorph.uber.drawMorph.call(this);
         return null;
     }
     context.fillStyle = this.color.toString();
@@ -5939,7 +5945,7 @@ SpeechBubbleMorph.prototype.popUp = function (world, pos, isClickable) {
 
 // SpeechBubbleMorph drawing:
 
-SpeechBubbleMorph.prototype.drawNew = function () {
+SpeechBubbleMorph.prototype.drawMorph = function () {
     // re-build my contents
     if (this.contentsMorph) {
         this.contentsMorph.destroy();
@@ -5982,7 +5988,7 @@ SpeechBubbleMorph.prototype.drawNew = function () {
         2);
 
     // draw my outline
-    SpeechBubbleMorph.uber.drawNew.call(this);
+    SpeechBubbleMorph.uber.drawMorph.call(this);
 
     // position my contents
     this.contentsMorph.setPosition(this.position().add(
@@ -6197,7 +6203,7 @@ CircleBoxMorph.prototype.autoOrientation = function () {
     }
 };
 
-CircleBoxMorph.prototype.drawNew = function () {
+CircleBoxMorph.prototype.drawMorph = function () {
     var radius, center1, center2, rect, points, x, y,
         context, ext,
         myself = this;
@@ -6313,24 +6319,24 @@ SliderButtonMorph.prototype.init = function (orientation) {
 
 SliderButtonMorph.prototype.autoOrientation = nop;
 
-SliderButtonMorph.prototype.drawNew = function () {
+SliderButtonMorph.prototype.drawMorph = function () {
     var colorBak = this.color.copy();
 
-    SliderButtonMorph.uber.drawNew.call(this);
+    SliderButtonMorph.uber.drawMorph.call(this);
     if (this.is3D || !MorphicPreferences.isFlat) {
         this.drawEdges();
     }
     this.normalImage = this.image;
 
     this.color = this.highlightColor.copy();
-    SliderButtonMorph.uber.drawNew.call(this);
+    SliderButtonMorph.uber.drawMorph.call(this);
     if (this.is3D || !MorphicPreferences.isFlat) {
         this.drawEdges();
     }
     this.highlightImage = this.image;
 
     this.color = this.pressColor.copy();
-    SliderButtonMorph.uber.drawNew.call(this);
+    SliderButtonMorph.uber.drawMorph.call(this);
     if (this.is3D || !MorphicPreferences.isFlat) {
         this.drawEdges();
     }
@@ -6566,10 +6572,10 @@ SliderMorph.prototype.unitSize = function () {
         this.rangeSize();
 };
 
-SliderMorph.prototype.drawNew = function () {
+SliderMorph.prototype.drawMorph = function () {
     var bw, bh, posX, posY;
 
-    SliderMorph.uber.drawNew.call(this);
+    SliderMorph.uber.drawMorph.call(this);
     this.button.orientation = this.orientation;
     if (this.orientation === 'vertical') {
         bw  = this.width() - 2;
@@ -7556,7 +7562,7 @@ MenuMorph.prototype.createLabel = function () {
     this.label.text = text;
 };
 
-MenuMorph.prototype.drawNew = function () {
+MenuMorph.prototype.drawMorph = function () {
     var myself = this,
         item,
         fb,
@@ -7630,7 +7636,7 @@ MenuMorph.prototype.drawNew = function () {
     fb = this.fullBounds();
     this.silentSetExtent(fb.extent().add(4));
     this.adjustWidths();
-    MenuMorph.uber.drawNew.call(this);
+    MenuMorph.uber.drawMorph.call(this);
 };
 
 MenuMorph.prototype.maxWidth = function () {
@@ -7996,7 +8002,7 @@ StringMorph.prototype.font = function () {
         this.fontStyle;
 };
 
-StringMorph.prototype.drawNew = function () {
+StringMorph.prototype.drawMorph = function () {
     var context, width, start, stop, i, p, c, x, y,
         shadowOffset = this.shadowOffset || new Point(),
         txt = this.isPassword ?
@@ -8183,7 +8189,7 @@ StringMorph.prototype.previousWordFrom = function (aSlot) {
     // answer the slot (index) slots indicating the position of the
     // previous word to the left of aSlot
     var index = aSlot - 1;
-    
+
     // while the current character is non-word one, we skip it, so that
     // if we are in the middle of a non-alphanumeric sequence, we'll get
     // right to the beginning of the previous word
@@ -8202,7 +8208,7 @@ StringMorph.prototype.previousWordFrom = function (aSlot) {
 
 StringMorph.prototype.nextWordFrom = function (aSlot) {
     var index = aSlot;
-    
+
     while (index < this.endOfLine() && !isWordChar(this.text[index])) {
         index += 1;
     }
@@ -8477,7 +8483,7 @@ StringMorph.prototype.mouseDoubleClick = function (pos) {
     } else {
         this.escalateEvent('mouseDoubleClick', pos);
     }
- 
+
 };
 
 StringMorph.prototype.selectWordAt = function (slot) {
@@ -8696,7 +8702,7 @@ TextMorph.prototype.parse = function () {
     });
 };
 
-TextMorph.prototype.drawNew = function () {
+TextMorph.prototype.drawMorph = function () {
     var context, height, i, line, width, shadowHeight, shadowWidth,
         offx, offy, x, y, start, stop, p, c;
 
@@ -9178,7 +9184,7 @@ TriggerMorph.prototype.init = function (
 
 // TriggerMorph drawing:
 
-TriggerMorph.prototype.drawNew = function () {
+TriggerMorph.prototype.drawMorph = function () {
     this.createBackgrounds();
     if (this.labelString !== null) {
         this.createLabel();
@@ -10388,7 +10394,7 @@ StringFieldMorph.prototype.init = function (
     this.drawNew();
 };
 
-StringFieldMorph.prototype.drawNew = function () {
+StringFieldMorph.prototype.drawMorph = function () {
     var txt;
     txt = this.text ? this.string() : this.defaultContents;
     this.text = null;
@@ -10416,7 +10422,7 @@ StringFieldMorph.prototype.drawNew = function () {
             this.text.height()
         )
     );
-    StringFieldMorph.uber.drawNew.call(this);
+    StringFieldMorph.uber.drawMorph.call(this);
     this.add(this.text);
 };
 

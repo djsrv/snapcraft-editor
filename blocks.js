@@ -4356,7 +4356,7 @@ CommandBlockMorph.prototype.userDestroyJustThis = function () {
 
 // CommandBlockMorph drawing:
 
-CommandBlockMorph.prototype.drawNew = function () {
+CommandBlockMorph.prototype.drawMorph = function () {
     var context;
     this.cachedClr = this.color.toString();
     this.cachedClrBright = this.bright();
@@ -5139,7 +5139,7 @@ ReporterBlockMorph.prototype.userDestroy = function () {
 
 // ReporterBlockMorph drawing:
 
-ReporterBlockMorph.prototype.drawNew = function () {
+ReporterBlockMorph.prototype.drawMorph = function () {
     var context;
     this.cachedClr = this.color.toString();
     this.cachedClrBright = this.bright();
@@ -6627,7 +6627,7 @@ ArgMorph.prototype.getSpec = function () {
 
 // ArgMorph drawing
 
-ArgMorph.prototype.drawNew = function () {
+ArgMorph.prototype.drawMorph = function () {
     if (this.type === 'list') {
         this.image = this.listIcon();
         this.silentSetExtent(new Point(
@@ -6641,7 +6641,7 @@ ArgMorph.prototype.drawNew = function () {
             this.image.height
         ));
     } else {
-        ArgMorph.uber.drawNew.call(this);
+        ArgMorph.uber.drawMorph.call(this);
     }
 };
 
@@ -6859,7 +6859,7 @@ CommandSlotMorph.prototype.attach = function () {
 
 // CommandSlotMorph drawing:
 
-CommandSlotMorph.prototype.drawNew = function () {
+CommandSlotMorph.prototype.drawMorph = function () {
     var context;
     this.cachedClr = this.color.toString();
     this.cachedClrBright = this.bright();
@@ -7188,7 +7188,7 @@ RingCommandSlotMorph.prototype.getSpec = function () {
 
 // RingCommandSlotMorph drawing:
 
-RingCommandSlotMorph.prototype.drawNew = function () {
+RingCommandSlotMorph.prototype.drawMorph = function () {
     var context;
     this.cachedClr = this.color.toString();
     this.cachedClrBright = this.bright();
@@ -7394,7 +7394,7 @@ CSlotMorph.prototype.fixLayout = function () {
 
 // CSlotMorph drawing:
 
-CSlotMorph.prototype.drawNew = function () {
+CSlotMorph.prototype.drawMorph = function () {
     var context;
     this.cachedClr = this.color.toString();
     this.cachedClrBright = this.bright();
@@ -8462,7 +8462,7 @@ InputSlotMorph.prototype.unflash = function () {
 
 // InputSlotMorph drawing:
 
-InputSlotMorph.prototype.drawNew = function () {
+InputSlotMorph.prototype.drawMorph = function () {
     var context, borderColor, r;
 
     // initialize my surface property
@@ -8812,7 +8812,7 @@ TemplateSlotMorph.prototype.reactToDropOf = function (droppedMorph) {
 
 // TemplateSlotMorph drawing:
 
-TemplateSlotMorph.prototype.drawNew = function () {
+TemplateSlotMorph.prototype.drawMorph = function () {
     var context;
     if (this.parent instanceof Morph) {
         this.color = this.parent.color.copy();
@@ -9043,7 +9043,7 @@ BooleanSlotMorph.prototype.mappedCode = function () {
 
 // BooleanSlotMorph drawing:
 
-BooleanSlotMorph.prototype.drawNew = function (progress) {
+BooleanSlotMorph.prototype.drawMorph = function (progress) {
     // "progress" is an optional number sliding the knob
     // on a range between 0 and 4
     var context,
@@ -9473,7 +9473,7 @@ ArrowMorph.prototype.setSize = function (size) {
 
 // ArrowMorph displaying:
 
-ArrowMorph.prototype.drawNew = function () {
+ArrowMorph.prototype.drawMorph = function () {
     // initialize my surface property
     this.image = newCanvas(this.extent());
     var context = this.image.getContext('2d'),
@@ -9693,7 +9693,7 @@ SymbolMorph.prototype.setLabelColor = function (
 
 // SymbolMorph displaying:
 
-SymbolMorph.prototype.drawNew = function () {
+SymbolMorph.prototype.drawMorph = function () {
     var ctx, x, y, sx, sy;
     this.image = newCanvas(new Point(
         this.symbolWidth() + Math.abs(this.shadowOffset.x),
@@ -11085,7 +11085,7 @@ ColorSlotMorph.prototype.evaluate = function () {
 
 // ColorSlotMorph drawing:
 
-ColorSlotMorph.prototype.drawNew = function () {
+ColorSlotMorph.prototype.drawMorph = function () {
     var context, borderColor, side;
 
     side = this.fontSize + this.edge * 2 + this.typeInPadding * 2;
@@ -11368,8 +11368,8 @@ MultiArgMorph.prototype.refresh = function () {
     });
 };
 
-MultiArgMorph.prototype.drawNew = function () {
-    MultiArgMorph.uber.drawNew.call(this);
+MultiArgMorph.prototype.drawMorph = function () {
+    MultiArgMorph.uber.drawMorph.call(this);
     this.refresh();
 };
 
@@ -11662,8 +11662,8 @@ ArgLabelMorph.prototype.refresh = function () {
     });
 };
 
-ArgLabelMorph.prototype.drawNew = function () {
-    ArgLabelMorph.uber.drawNew.call(this);
+ArgLabelMorph.prototype.drawMorph = function () {
+    ArgLabelMorph.uber.drawMorph.call(this);
     this.refresh();
 };
 
@@ -11744,7 +11744,7 @@ FunctionSlotMorph.prototype.getSpec = function () {
 
 // FunctionSlotMorph drawing:
 
-FunctionSlotMorph.prototype.drawNew = function () {
+FunctionSlotMorph.prototype.drawMorph = function () {
     var context, borderColor;
 
     // initialize my surface property

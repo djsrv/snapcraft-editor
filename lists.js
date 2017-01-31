@@ -848,7 +848,7 @@ ListWatcherMorph.prototype.show = function () {
 
 // ListWatcherMorph drawing:
 
-ListWatcherMorph.prototype.drawNew = function () {
-    WatcherMorph.prototype.drawNew.call(this);
+ListWatcherMorph.prototype.drawMorph = function () {
+    WatcherMorph.prototype.drawMorph.call(this);
     this.fixLayout();
 };

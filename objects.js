@@ -1465,7 +1465,7 @@ Sprite.prototype.setName = function (string) {
 
 // Sprite rendering
 
-Sprite.prototype.drawNew = function () {
+Sprite.prototype.drawMorph = function () {
     var myself = this,
         currentCenter,
         facing, // actual costume heading based on my rotation style
@@ -1558,7 +1558,7 @@ Sprite.prototype.drawNew = function () {
         this.silentSetExtent(new Point(newX, newX));
         this.image = newCanvas(this.extent(), true);
         this.setCenter(currentCenter, true); // just me
-        Sprite.uber.drawNew.call(this, facing);
+        Sprite.uber.drawMorph.call(this, facing);
         this.rotationOffset = this.extent().divideBy(2);
         this.image = this.applyGraphicsEffects(this.image);
         if (isLoadingCostume) { // retry until costume is done loading
@@ -5422,9 +5422,9 @@ Stage.prototype.setScale = function (number) {
 
 // Stage rendering
 
-Stage.prototype.drawNew = function () {
+Stage.prototype.drawMorph = function () {
     var ctx;
-    Stage.uber.drawNew.call(this);
+    Stage.uber.drawMorph.call(this);
     if (this.costume) {
         ctx = this.image.getContext('2d');
         ctx.scale(this.scale, this.scale);
@@ -6945,7 +6945,7 @@ SpriteBubbleMorph.prototype.setScale = function (scale) {
 
 // SpriteBubbleMorph drawing:
 
-SpriteBubbleMorph.prototype.drawNew = function (toggle) {
+SpriteBubbleMorph.prototype.drawMorph = function (toggle) {
     var sprite = Sprite.prototype;
 
     // scale my settings
@@ -6970,7 +6970,7 @@ SpriteBubbleMorph.prototype.drawNew = function (toggle) {
         + 2);
 
     // draw my outline
-    SpeechBubbleMorph.uber.drawNew.call(this);
+    SpeechBubbleMorph.uber.drawMorph.call(this);
 
     // position my contents
     this.contentsMorph.setPosition(this.position().add(
@@ -7005,7 +7005,7 @@ SpriteBubbleMorph.prototype.fixLayout = function () {
         + 2);
 
     // draw my outline
-    SpeechBubbleMorph.uber.drawNew.call(this);
+    SpeechBubbleMorph.uber.drawMorph.call(this);
 
     // position my contents
     this.contentsMorph.setPosition(this.position().add(
@@ -7398,7 +7398,7 @@ CostumeEditorMorph.prototype.accept = function () {
 
 // CostumeEditorMorph displaying
 
-CostumeEditorMorph.prototype.drawNew = function () {
+CostumeEditorMorph.prototype.drawMorph = function () {
     var rp, ctx;
 
     this.margin = this.size.subtract(this.costume.extent()).divideBy(2);
@@ -7688,7 +7688,7 @@ CellMorph.prototype.update = function () {
     }
 };
 
-CellMorph.prototype.drawNew = function (toggle, type) {
+CellMorph.prototype.drawMorph = function (toggle, type) {
     var context,
         txt,
         img,
@@ -7821,7 +7821,7 @@ CellMorph.prototype.drawNew = function (toggle, type) {
     this.image = newCanvas(this.extent());
     context = this.image.getContext('2d');
     if ((this.edge === 0) && (this.border === 0)) {
-        BoxMorph.uber.drawNew.call(this);
+        BoxMorph.uber.drawMorph.call(this);
         return null;
     }
     context.fillStyle = this.color.toString();
@@ -7910,7 +7910,7 @@ CellMorph.prototype.layoutChanged = function () {
     this.image = newCanvas(this.extent());
     context = this.image.getContext('2d');
     if ((this.edge === 0) && (this.border === 0)) {
-        BoxMorph.uber.drawNew.call(this);
+        BoxMorph.uber.drawMorph.call(this);
         return null;
     }
     context.fillStyle = this.color.toString();
@@ -8508,13 +8508,13 @@ WatcherMorph.prototype.userSetSliderMax = function () {
 
 // WatcherMorph drawing:
 
-WatcherMorph.prototype.drawNew = function () {
+WatcherMorph.prototype.drawMorph = function () {
     var context,
         gradient;
     this.image = newCanvas(this.extent());
     context = this.image.getContext('2d');
     if (MorphicPreferences.isFlat || (this.edge === 0 && this.border === 0)) {
-        BoxMorph.uber.drawNew.call(this);
+        BoxMorph.uber.drawMorph.call(this);
         return;
     }
     gradient = context.createLinearGradient(0, 0, 0, this.height());

@@ -495,7 +495,7 @@ PaintColorPickerMorph.prototype.init = function (extent, action) {
     this.drawNew();
 };
 
-PaintColorPickerMorph.prototype.drawNew = function () {
+PaintColorPickerMorph.prototype.drawMorph = function () {
     var x = 0,
         y = 0,
         can = newCanvas(this.extent()),
@@ -994,7 +994,7 @@ PaintCanvasMorph.prototype.buildContents = function () {
     }
 };
 
-PaintCanvasMorph.prototype.drawNew = function () {
+PaintCanvasMorph.prototype.drawMorph = function () {
     var can = newCanvas(this.extent(), true);
     this.merge(this.background, can);
     this.merge(this.paper, can);

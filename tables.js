@@ -311,7 +311,7 @@ TableCellMorph.prototype.getData = function () {
     return this.data instanceof Array ? this.data[0] : this.data;
 };
 
-TableCellMorph.prototype.drawNew = function () {
+TableCellMorph.prototype.drawMorph = function () {
     this.image = newCanvas(this.extent());
     this.drawData();
 };
@@ -630,7 +630,7 @@ TableMorph.prototype.updateScrollBars = function () {
     }
 };
 
-TableMorph.prototype.drawNew = function () {
+TableMorph.prototype.drawMorph = function () {
     var context, w, i;
     this.image = newCanvas(this.extent());
     context = this.image.getContext('2d');
