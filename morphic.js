@@ -1209,7 +1209,9 @@ var MorphicPreferences = standardSettings;
     Snap! >> guis.js >> toggleRetina()
 */
 
-enableRetinaSupport();
+if (!SERVER_MODE) {
+    enableRetinaSupport();
+}
 
 // Global Functions ////////////////////////////////////////////////////
 
@@ -1301,6 +1303,11 @@ function newCanvas(extentPoint, nonRetina) {
 
 function getMinimumFontHeight() {
     // answer the height of the smallest font renderable in pixels
+
+    if (SERVER_MODE) {
+        return 0;
+    }
+
     var str = 'I',
         size = 50,
         canvas = document.createElement('canvas'),
@@ -1331,6 +1338,11 @@ function getMinimumFontHeight() {
 function getBlurredShadowSupport() {
     // check for Chrome issue 90001
     // http://code.google.com/p/chromium/issues/detail?id=90001
+
+    if (SERVER_MODE) {
+        return false;
+    }
+
     var source, target, ctx;
     source = document.createElement('canvas');
     source.width = 10;
