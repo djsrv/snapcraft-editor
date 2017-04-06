@@ -128,17 +128,6 @@ Sprite.prototype.isCachingPrimitives = true;
 
 Sprite.prototype.enableNesting = true;
 Sprite.prototype.enableFirstClass = true;
-Sprite.prototype.useFlatLineEnds = false;
-Sprite.prototype.highlightColor = new Color(250, 200, 130);
-Sprite.prototype.highlightBorder = 8;
-
-Sprite.prototype.bubbleColor = new Color(255, 255, 255);
-Sprite.prototype.bubbleFontSize = 14;
-Sprite.prototype.bubbleFontIsBold = true;
-Sprite.prototype.bubbleCorner = 10;
-Sprite.prototype.bubbleBorder = 3;
-Sprite.prototype.bubbleBorderColor = new Color(190, 190, 190);
-Sprite.prototype.bubbleMaxTextWidth = 130;
 
 Sprite.prototype.initBlocks = function () {
     Sprite.prototype.blocks = {
@@ -1354,7 +1343,6 @@ Sprite.prototype.fullCopy = function (forClone) {
         arr = [],
         cb, effect;
 
-    c.stopTalking();
     c.color = this.color.copy();
     c.blocksCache = {};
     c.paletteCache = {};
@@ -1388,11 +1376,6 @@ Sprite.prototype.fullCopy = function (forClone) {
         dp.rotatesWithAnchor = part.rotatesWithAnchor;
         c.attachPart(dp);
     });
-    for (effect in this.graphicsValues) {
-        if (this.graphicsValues.hasOwnProperty(effect)) {
-            c.graphicsValues[effect] = this.graphicsValues[effect];
-        }
-    }
     return c;
 };
 
@@ -2659,7 +2642,6 @@ Sprite.prototype.clonify = function (stage, immediately) {
 
 Sprite.prototype.removeClone = function () {
     if (this.isClone) {
-        // this.stopTalking();
         this.parent.threads.stopAllForReceiver(this);
         this.corpsify();
         this.destroy();
@@ -3490,11 +3472,6 @@ Stage.prototype.fireStopAllEvent = function () {
     this.keysPressed = {};
     this.threads.stopAll();
     this.stopAllActiveSounds();
-    this.children.forEach(function (morph) {
-        if (morph.stopTalking) {
-            morph.stopTalking();
-        }
-    });
     if (ide) {
         ide.nextSteps([
             nop,
