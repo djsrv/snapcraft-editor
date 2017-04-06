@@ -688,7 +688,7 @@ SyntaxElementMorph.prototype.refactorVarInStack = function (
         this.setSpec(newName);
         this.fullChanged();
         this.fixLabelColor();
-    } 
+    }
 
     if (this.choices === 'getVarNamesDict'
             && this.contents().text === oldName) {
@@ -1119,14 +1119,6 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 true
             );
             part.isStatic = true;
-            break;
-        case '%cst':
-            part = new InputSlotMorph(
-                null,
-                false,
-                'costumesMenu',
-                true
-            );
             break;
         case '%eff':
             part = new InputSlotMorph(
@@ -1920,12 +1912,6 @@ SyntaxElementMorph.prototype.showBubble = function (value, exportPic) {
             morphToShow.silentSetHeight(img.height);
             morphToShow.image = img;
         }
-    } else if (value instanceof Costume) {
-        img = value.thumbnail(new Point(40, 40));
-        morphToShow = new Morph();
-        morphToShow.silentSetWidth(img.width);
-        morphToShow.silentSetHeight(img.height);
-        morphToShow.image = img;
     } else if (value instanceof Context) {
         img = value.image();
         morphToShow = new Morph();
@@ -3187,7 +3173,7 @@ BlockMorph.prototype.refactorThisVar = function (justTheTemplate) {
 
     function renameVarTo (newName) {
         var definer;
-        
+
         if (this.parent instanceof SyntaxElementMorph) {
             // script var
             if (justTheTemplate) {
@@ -3246,7 +3232,7 @@ BlockMorph.prototype.refactorThisVar = function (justTheTemplate) {
                     detect(
                         stage.children,
                         function (any) {
-                            return any instanceof Sprite && 
+                            return any instanceof Sprite &&
                                 any.hasSpriteVariable(newName);
                         })
                     ) {
@@ -3306,7 +3292,7 @@ BlockMorph.prototype.refactorThisVar = function (justTheTemplate) {
 
     function varExistsError (where) {
         ide.inform(
-            'Variable exists', 
+            'Variable exists',
             'A variable with this name already exists ' +
                 (where || 'in this context') + '.'
             );
@@ -8144,27 +8130,6 @@ InputSlotMorph.prototype.attributesMenu = function () {
     return dict;
 };
 
-InputSlotMorph.prototype.costumesMenu = function () {
-    var rcvr = this.parentThatIsA(BlockMorph).receiver(),
-        dict,
-        allNames = [];
-    if (rcvr instanceof Sprite) {
-        dict = {Turtle : ['Turtle']};
-    } else { // stage
-        dict = {Empty : ['Empty']};
-    }
-    rcvr.costumes.asArray().forEach(function (costume) {
-        allNames = allNames.concat(costume.name);
-    });
-    if (allNames.length > 0) {
-        dict['~'] = null;
-        allNames.forEach(function (name) {
-            dict[name] = name;
-        });
-    }
-    return dict;
-};
-
 InputSlotMorph.prototype.soundsMenu = function () {
     var rcvr = this.parentThatIsA(BlockMorph).receiver(),
         allNames = [],
@@ -9722,10 +9687,6 @@ SymbolMorph.prototype.drawMorph = function () {
 
 SymbolMorph.prototype.symbolCanvasColored = function (aColor) {
     // private
-    if (this.name instanceof Costume) {
-        return this.name.thumbnail(new Point(this.symbolWidth(), this.size));
-    }
-
     var canvas = newCanvas(new Point(this.symbolWidth(), this.size));
 
     switch (this.name) {
@@ -9832,9 +9793,6 @@ SymbolMorph.prototype.symbolWidth = function () {
     // private
     var size = this.size;
 
-    if (this.name instanceof Costume) {
-        return (size / this.name.height()) * this.name.width();
-    }
     switch (this.name) {
     case 'pointRight':
         return Math.sqrt(size * size - Math.pow(size / 2, 2));
@@ -10980,7 +10938,7 @@ SymbolMorph.prototype.drawSymbolMagnifyingGlass = function (canvas, color) {
         y + r,
         w
     );
-    
+
     gradient.addColorStop(0, color.inverted().lighter(50).toString());
     gradient.addColorStop(1, color.inverted().darker(25).toString());
     ctx.fillStyle = gradient;
@@ -10990,7 +10948,7 @@ SymbolMorph.prototype.drawSymbolMagnifyingGlass = function (canvas, color) {
     ctx.lineWidth = l / 2;
     ctx.arc(x, y, r, radians(0), radians(360), false);
     ctx.stroke();
-    
+
     ctx.lineWidth = l;
     ctx.beginPath();
     ctx.moveTo(l / 2, h - l / 2);

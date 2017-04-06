@@ -506,77 +506,6 @@ SnapSerializer.prototype.rawLoadProjectModel = function (xmlNode) {
 
     this.objects = {};
 
-    /* Watchers */
-
-    model.sprites.childrenNamed('watcher').forEach(function (model) {
-        var watcher, color, target, hidden, extX, extY;
-
-        color = myself.loadColor(model.attributes.color);
-        target = Object.prototype.hasOwnProperty.call(
-            model.attributes,
-            'scope'
-        ) ? project.sprites[model.attributes.scope] : null;
-
-        // determine whether the watcher is hidden, slightly
-        // complicated to retain backward compatibility
-        // with former tag format: hidden="hidden"
-        // now it's: hidden="true"
-        hidden = Object.prototype.hasOwnProperty.call(
-            model.attributes,
-            'hidden'
-        ) && (model.attributes.hidden !== 'false');
-
-        if (Object.prototype.hasOwnProperty.call(
-                model.attributes,
-                'var'
-            )) {
-            watcher = new WatcherMorph(
-                model.attributes['var'],
-                color,
-                isNil(target) ? project.globalVariables
-                    : target.variables,
-                model.attributes['var'],
-                hidden
-            );
-        } else {
-            watcher = new WatcherMorph(
-                localize(myself.watcherLabels[model.attributes.s]),
-                color,
-                target,
-                model.attributes.s,
-                hidden
-            );
-        }
-        watcher.setStyle(model.attributes.style || 'normal');
-        if (watcher.style === 'slider') {
-            watcher.setSliderMin(model.attributes.min || '1', true);
-            watcher.setSliderMax(model.attributes.max || '100', true);
-        }
-        watcher.setPosition(
-            project.stage.topLeft().add(new Point(
-                +model.attributes.x || 0,
-                +model.attributes.y || 0
-            ))
-        );
-        project.stage.add(watcher);
-        watcher.onNextStep = function () {this.currentValue = null; };
-
-        // set watcher's contentsMorph's extent if it is showing a list and
-        // its monitor dimensions are given
-        if (watcher.currentValue instanceof List) {
-            extX = model.attributes.extX;
-            if (extX) {
-                watcher.cellMorph.contentsMorph.setWidth(+extX);
-            }
-            extY = model.attributes.extY;
-            if (extY) {
-                watcher.cellMorph.contentsMorph.setHeight(+extY);
-            }
-            // adjust my contentsMorph's handle position
-            watcher.cellMorph.contentsMorph.handle.drawNew();
-        }
-    });
-    this.objects = {};
     return project;
 };
 
@@ -719,7 +648,6 @@ SnapSerializer.prototype.loadObject = function (object, model) {
     var blocks = model.require('blocks');
     this.loadInheritanceInfo(object, model);
     this.loadNestingInfo(object, model);
-    this.loadCostumes(object, model);
     this.loadSounds(object, model);
     this.loadCustomBlocks(object, blocks);
     this.populateCustomBlocks(object, blocks);
@@ -740,31 +668,6 @@ SnapSerializer.prototype.loadNestingInfo = function (object, model) {
     var info = model.childNamed('nest');
     if (info) {
         object.nestingInfo = info.attributes;
-    }
-};
-
-SnapSerializer.prototype.loadCostumes = function (object, model) {
-    // private
-    var costumes = model.childNamed('costumes'),
-        costume;
-    if (costumes) {
-        object.costumes = this.loadValue(costumes.require('list'));
-    }
-    if (Object.prototype.hasOwnProperty.call(
-            model.attributes,
-            'costume'
-        )) {
-        costume = object.costumes.asArray()[model.attributes.costume - 1];
-        if (costume) {
-            if (costume.loaded) {
-                object.wearCostume(costume);
-            } else {
-                costume.loaded = function () {
-                    object.wearCostume(costume);
-                    this.loaded = true;
-                };
-            }
-        }
     }
 };
 
@@ -1336,65 +1239,6 @@ SnapSerializer.prototype.loadValue = function (model) {
             v.outerContext.variables.parentFrame = v.receiver.variables;
         }
         return v;
-    case 'costume':
-        center = new Point();
-        if (Object.prototype.hasOwnProperty.call(
-                model.attributes,
-                'center-x'
-            )) {
-            center.x = parseFloat(model.attributes['center-x']);
-        }
-        if (Object.prototype.hasOwnProperty.call(
-                model.attributes,
-                'center-y'
-            )) {
-            center.y = parseFloat(model.attributes['center-y']);
-        }
-        if (Object.prototype.hasOwnProperty.call(
-                model.attributes,
-                'name'
-            )) {
-            name = model.attributes.name;
-        }
-        if (Object.prototype.hasOwnProperty.call(
-                model.attributes,
-                'image'
-            )) {
-            image = new Image();
-            if (model.attributes.image.indexOf('data:image/svg+xml') === 0
-                    && !MorphicPreferences.rasterizeSVGs) {
-                v = new SVG_Costume(null, name, center);
-                image.onload = function () {
-                    v.contents = image;
-                    v.version = +new Date();
-                    if (typeof v.loaded === 'function') {
-                        v.loaded();
-                    } else {
-                        v.loaded = true;
-                    }
-                };
-            } else {
-                v = new Costume(null, name, center);
-                image.onload = function () {
-                    var canvas = newCanvas(
-                            new Point(image.width, image.height),
-                            true // nonRetina
-                        ),
-                        context = canvas.getContext('2d');
-                    context.drawImage(image, 0, 0);
-                    v.contents = canvas;
-                    v.version = +new Date();
-                    if (typeof v.loaded === 'function') {
-                        v.loaded();
-                    } else {
-                        v.loaded = true;
-                    }
-                };
-            }
-            image.src = model.attributes.image;
-        }
-        record();
-        return v;
     case 'sound':
         audio = new Audio();
         audio.src = model.attributes.sound;
@@ -1516,7 +1360,7 @@ Stage.prototype.toXML = function (serializer) {
             '<notes>$</notes>' +
             '<thumbnail>$</thumbnail>' +
             '<stage name="@" width="@" height="@" ' +
-            'costume="@" tempo="@" threadsafe="@" ' +
+            'tempo="@" threadsafe="@" ' +
             'lines="@" ' +
             'ternary="@" ' +
             'codify="@" ' +
@@ -1524,7 +1368,6 @@ Stage.prototype.toXML = function (serializer) {
             'sublistIDs="@" ' +
             'scheduled="@" ~>' +
             '<pentrails>$</pentrails>' +
-            '<costumes>%</costumes>' +
             '<sounds>%</sounds>' +
             '<variables>%</variables>' +
             '<blocks>%</blocks>' +
@@ -1544,7 +1387,6 @@ Stage.prototype.toXML = function (serializer) {
         this.name,
         Stage.prototype.dimensions.x,
         Stage.prototype.dimensions.y,
-        this.getCostumeIdx(),
         this.getTempo(),
         this.isThreadSafe,
         Sprite.prototype.useFlatLineEnds ? 'flat' : 'round',
@@ -1554,7 +1396,6 @@ Stage.prototype.toXML = function (serializer) {
         this.enableSublistIDs,
         Stage.prototype.frameRate !== 0,
         normalizeCanvas(this.trailsCanvas, true).toDataURL('image/png'),
-        serializer.store(this.costumes, this.name + '_cst'),
         serializer.store(this.sounds, this.name + '_snd'),
         serializer.store(this.variables),
         serializer.store(this.customBlocks),
@@ -1583,10 +1424,9 @@ Sprite.prototype.toXML = function (serializer) {
             ' rotation="@"' +
             ' draggable="@"' +
             '%' +
-            ' costume="@" color="@,@,@" pen="@" ~>' +
+            ' color="@,@,@" pen="@" ~>' +
             '%' + // inheritance info
             '%' + // nesting info
-            '<costumes>%</costumes>' +
             '<sounds>%</sounds>' +
             '<variables>%</variables>' +
             '<blocks>%</blocks>' +
@@ -1601,7 +1441,6 @@ Sprite.prototype.toXML = function (serializer) {
         this.rotationStyle,
         this.isDraggable,
         this.isVisible ? '' : ' hidden="true"',
-        this.getCostumeIdx(),
         this.color.r,
         this.color.g,
         this.color.b,
@@ -1628,25 +1467,11 @@ Sprite.prototype.toXML = function (serializer) {
                     + '"/>'
             : '',
 
-        serializer.store(this.costumes, this.name + '_cst'),
         serializer.store(this.sounds, this.name + '_snd'),
         serializer.store(this.variables),
         !this.customBlocks ?
                     '' : serializer.store(this.customBlocks),
         serializer.store(this.scripts)
-    );
-};
-
-Costume.prototype[XML_Serializer.prototype.mediaDetectionProperty] = true;
-
-Costume.prototype.toXML = function (serializer) {
-    return serializer.format(
-        '<costume name="@" center-x="@" center-y="@" image="@" ~/>',
-        this.name,
-        this.rotationCenter.x,
-        this.rotationCenter.y,
-        this instanceof SVG_Costume ? this.contents.src
-                : normalizeCanvas(this.contents).toDataURL('image/png')
     );
 };
 
@@ -1688,48 +1513,6 @@ VariableFrame.prototype.toXML = function (serializer) {
         }
         return vars + dta;
     }, '');
-};
-
-// Watchers
-
-WatcherMorph.prototype.toXML = function (serializer) {
-    var isVar = this.target instanceof VariableFrame,
-        isList = this.currentValue instanceof List,
-        color = this.readoutColor,
-        position = this.parent ?
-                this.topLeft().subtract(this.parent.topLeft())
-                : this.topLeft();
-
-    if (this.isTemporary()) {
-        // do not save watchers on temporary variables
-        return '';
-    }
-    return serializer.format(
-        '<watcher% % style="@"% x="@" y="@" color="@,@,@"%%/>',
-        (isVar && this.target.owner) || (!isVar && this.target) ?
-                    serializer.format(' scope="@"',
-                        isVar ? this.target.owner.name : this.target.name)
-                            : '',
-        serializer.format(isVar ? 'var="@"' : 's="@"', this.getter),
-        this.style,
-        isVar && this.style === 'slider' ? serializer.format(
-                ' min="@" max="@"',
-                this.sliderMorph.start,
-                this.sliderMorph.stop
-            ) : '',
-        position.x,
-        position.y,
-        color.r,
-        color.g,
-        color.b,
-        !isList ? ''
-                : serializer.format(
-                ' extX="@" extY="@"',
-                this.cellMorph.contentsMorph.width(),
-                this.cellMorph.contentsMorph.height()
-            ),
-        this.isVisible ? '' : ' hidden="true"'
-    );
 };
 
 // Scripts
