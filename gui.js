@@ -939,7 +939,7 @@ IDE_Morph.prototype.createCategories = function () {
     }
 
     Sprite.prototype.categories.forEach(function (cat) {
-        if (!contains(['lists', 'other'], cat)) {
+        if (!contains(['sensing', 'sound', 'pen', 'lists', 'other'], cat)) {
             addCategoryButton(cat);
         }
     });
@@ -1097,17 +1097,17 @@ IDE_Morph.prototype.createSpriteBar = function () {
         return button;
     }
 
+    /*
     addRotationStyleButton(1);
     addRotationStyleButton(2);
     addRotationStyleButton(0);
     this.rotationStyleButtons = rotationStyleButtons;
+    */
 
     thumbnail = new Morph();
     thumbnail.setExtent(thumbSize);
     thumbnail.image = this.currentSprite.thumbnail(thumbSize);
-    thumbnail.setPosition(
-        rotationStyleButtons[0].topRight().add(new Point(5, 3))
-    );
+    thumbnail.setPosition(myself.spriteBar.position().add(2));
     this.spriteBar.add(thumbnail);
 
     thumbnail.fps = 3;
@@ -1135,6 +1135,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
     };
     this.spriteBar.reactToEdit = nameField.accept;
 
+    /*
     // padlock
     padlock = new ToggleMorph(
         'checkbox',
@@ -1167,6 +1168,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
     if (this.currentSprite instanceof Stage) {
         padlock.hide();
     }
+    */
 
     // tab bar
     tabBar.tabTo = function (tabString) {
@@ -1576,33 +1578,7 @@ IDE_Morph.prototype.setExtent = function (point) {
         minRatio,
         maxRatio;
 
-    // determine the minimum dimensions making sense for the current mode
-    if (this.isAppMode) {
-        minExt = Stage.prototype.dimensions.add(
-            this.controlBar.height() + 10
-        );
-    } else {
-        if (this.stageRatio > 1) {
-            minExt = padding.add(Stage.prototype.dimensions);
-        } else {
-            minExt = padding.add(
-                Stage.prototype.dimensions.multiplyBy(this.stageRatio)
-            );
-        }
-    }
-    ext = point.max(minExt);
-
-    // adjust stage ratio if necessary
-    maxWidth = ext.x -
-        (200 + this.spriteBar.tabBar.width() + (this.padding * 2));
-    minWidth = SpriteIconMorph.prototype.thumbSize.x * 3;
-    maxHeight = (ext.y - SpriteIconMorph.prototype.thumbSize.y * 3.5);
-    minRatio = minWidth / this.stage.dimensions.x;
-    maxRatio = Math.min(
-        (maxWidth / this.stage.dimensions.x),
-        (maxHeight / this.stage.dimensions.y)
-    );
-    this.stageRatio = Math.min(maxRatio, Math.max(minRatio, this.stageRatio));
+    ext = point;
 
     // apply
     IDE_Morph.uber.setExtent.call(this, ext);
@@ -1738,16 +1714,6 @@ IDE_Morph.prototype.toggleFastTracking = function () {
         this.stopFastTracking();
     } else {
         this.startFastTracking();
-    }
-};
-
-IDE_Morph.prototype.toggleVariableFrameRate = function () {
-    if (Stage.prototype.frameRate) {
-        Stage.prototype.frameRate = 0;
-        this.stage.fps = 0;
-    } else {
-        Stage.prototype.frameRate = 30;
-        this.stage.fps = 30;
     }
 };
 
@@ -2293,10 +2259,6 @@ IDE_Morph.prototype.settingsMenu = function () {
         'Zoom blocks...',
         'userSetBlocksScale'
     );
-    menu.addItem(
-        'Stage size...',
-        'userSetStageSize'
-    );
     if (shiftClicked) {
         menu.addItem(
             'Dragging threshold...',
@@ -2598,14 +2560,6 @@ IDE_Morph.prototype.settingsMenu = function () {
         'check to disallow\nscript reentrance'
     );
     addPreference(
-        'Prefer smooth animations',
-        'toggleVariableFrameRate',
-        Stage.prototype.frameRate,
-        'uncheck for greater speed\nat variable frame rates',
-        'check for smooth, predictable\nanimations across computers',
-        true
-    );
-    addPreference(
         'Flat line ends',
         function () {
             Sprite.prototype.useFlatLineEnds =
@@ -2637,20 +2591,6 @@ IDE_Morph.prototype.settingsMenu = function () {
         Stage.prototype.enableCodeMapping,
         'uncheck to disable\nblock to text mapping features',
         'check for block\nto text mapping features',
-        false
-    );
-    addPreference(
-        'Inheritance support',
-        function () {
-            Stage.prototype.enableInheritance =
-                !Stage.prototype.enableInheritance;
-            myself.currentSprite.blocksCache.variables = null;
-            myself.currentSprite.paletteCache.variables = null;
-            myself.refreshPalette();
-        },
-        Stage.prototype.enableInheritance,
-        'uncheck to disable\nsprite inheritance features',
-        'check for sprite\ninheritance features',
         false
     );
     addPreference(
@@ -3296,12 +3236,10 @@ IDE_Morph.prototype.newProject = function () {
     this.globalVariables = new VariableFrame();
     this.currentSprite = new Sprite(this.globalVariables);
     this.sprites = new List([this.currentSprite]);
-    Stage.prototype.dimensions = new Point(480, 360);
     Stage.prototype.hiddenPrimitives = {};
     Stage.prototype.codeMappings = {};
     Stage.prototype.codeHeaders = {};
     Stage.prototype.enableCodeMapping = false;
-    Stage.prototype.enableInheritance = false;
     Stage.prototype.enableSublistIDs = false;
     Sprite.prototype.useFlatLineEnds = false;
     BooleanSlotMorph.prototype.isTernary = true;
@@ -3809,7 +3747,6 @@ IDE_Morph.prototype.rawOpenProjectString = function (str) {
     Stage.prototype.codeMappings = {};
     Stage.prototype.codeHeaders = {};
     Stage.prototype.enableCodeMapping = false;
-    Stage.prototype.enableInheritance = false;
     Stage.prototype.enableSublistIDs = false;
     Process.prototype.enableLiveCoding = false;
     if (Process.prototype.isCatchingErrors) {
@@ -3854,7 +3791,6 @@ IDE_Morph.prototype.rawOpenCloudDataString = function (str) {
     Stage.prototype.codeMappings = {};
     Stage.prototype.codeHeaders = {};
     Stage.prototype.enableCodeMapping = false;
-    Stage.prototype.enableInheritance = false;
     Stage.prototype.enableSublistIDs = false;
     Process.prototype.enableLiveCoding = false;
     if (Process.prototype.isCatchingErrors) {
@@ -6705,21 +6641,6 @@ SpriteIconMorph.prototype.userMenu = function () {
     menu.addItem("duplicate", 'duplicateSprite');
     menu.addItem("delete", 'removeSprite');
     menu.addLine();
-    if (Stage.prototype.enableInheritance) {
-        menu.addItem("parent...", 'chooseExemplar');
-    }
-    if (this.object.anchor) {
-        menu.addItem(
-            localize('detach from') + ' ' + this.object.anchor.name,
-            function () {myself.object.detachFromAnchor(); }
-        );
-    }
-    if (this.object.parts.length) {
-        menu.addItem(
-            'detach all parts',
-            function () {myself.object.detachAllParts(); }
-        );
-    }
     menu.addItem("export...", 'exportSprite');
     return menu;
 };

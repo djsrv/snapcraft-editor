@@ -144,21 +144,20 @@ Sprite.prototype.initBlocks = function () {
             only: Sprite,
             type: 'command',
             category: 'motion',
-            spec: 'turn %clockwise %n degrees',
-            defaults: [15]
+            spec: 'turn %turndir %n degrees',
+            defaults: [['right'], 15]
         },
-        turnLeft: {
+        setYaw: {
             only: Sprite,
             type: 'command',
             category: 'motion',
-            spec: 'turn %counterclockwise %n degrees',
-            defaults: [15]
+            spec: 'set yaw to %yaw'
         },
-        setHeading: {
+        setPitch: {
             only: Sprite,
             type: 'command',
             category: 'motion',
-            spec: 'point in direction %dir'
+            spec: 'set pitch to %pitch'
         },
         doFaceTowards: {
             only: Sprite,
@@ -166,25 +165,18 @@ Sprite.prototype.initBlocks = function () {
             category: 'motion',
             spec: 'point towards %dst'
         },
-        gotoXY: {
+        gotoXYZ: {
             only: Sprite,
             type: 'command',
             category: 'motion',
-            spec: 'go to x: %n y: %n',
-            defaults: [0, 0]
+            spec: 'go to x: %n y: %n z: %n',
+            defaults: [0, 0, 0]
         },
         doGotoObject: {
             only: Sprite,
             type: 'command',
             category: 'motion',
             spec: 'go to %dst'
-        },
-        doGlide: {
-            only: Sprite,
-            type: 'command',
-            category: 'motion',
-            spec: 'glide %n secs to x: %n y: %n',
-            defaults: [1, 0, 0]
         },
         changeXPosition: {
             only: Sprite,
@@ -214,11 +206,19 @@ Sprite.prototype.initBlocks = function () {
             spec: 'set y to %n',
             defaults: [0]
         },
-        bounceOffEdge: {
+        changeZPosition: {
             only: Sprite,
             type: 'command',
             category: 'motion',
-            spec: 'if on edge, bounce'
+            spec: 'change z by %n',
+            defaults: [10]
+        },
+        setZPosition: {
+            only: Sprite,
+            type: 'command',
+            category: 'motion',
+            spec: 'set z to %n',
+            defaults: [0]
         },
         xPosition: {
             only: Sprite,
@@ -232,93 +232,32 @@ Sprite.prototype.initBlocks = function () {
             category: 'motion',
             spec: 'y position'
         },
-        direction: {
+        zPosition: {
             only: Sprite,
             type: 'reporter',
             category: 'motion',
-            spec: 'direction'
+            spec: 'z position'
+        },
+        yaw: {
+            only: Sprite,
+            type: 'reporter',
+            category: 'motion',
+            spec: 'yaw'
+        },
+        pitch: {
+            only: Sprite,
+            type: 'reporter',
+            category: 'motion',
+            spec: 'pitch'
         },
 
         // Looks
-        doSwitchToCostume: {
-            type: 'command',
-            category: 'looks',
-            spec: 'switch to costume %cst'
-        },
-        doWearNextCostume: {
-            type: 'command',
-            category: 'looks',
-            spec: 'next costume'
-        },
-        getCostumeIdx: {
-            type: 'reporter',
-            category: 'looks',
-            spec: 'costume #'
-        },
-        doSayFor: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'say %s for %n secs',
-            defaults: [localize('Hello!'), 2]
-        },
-        bubble: {
+        chat: {
             only: Sprite,
             type: 'command',
             category: 'looks',
             spec: 'say %s',
             defaults: [localize('Hello!')]
-        },
-        doThinkFor: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'think %s for %n secs',
-            defaults: [localize('Hmm...'), 2]
-        },
-        doThink: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'think %s',
-            defaults: [localize('Hmm...')]
-        },
-        changeEffect: {
-            type: 'command',
-            category: 'looks',
-            spec: 'change %eff effect by %n',
-            defaults: [null, 25]
-        },
-        setEffect: {
-            type: 'command',
-            category: 'looks',
-            spec: 'set %eff effect to %n',
-            defaults: [null, 0]
-        },
-        clearEffects: {
-            type: 'command',
-            category: 'looks',
-            spec: 'clear graphic effects'
-        },
-        changeScale: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'change size by %n',
-            defaults: [10]
-        },
-        setScale: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'set size to %n %',
-            defaults: [100]
-        },
-        getScale: {
-            only: Sprite,
-            type: 'reporter',
-            category: 'looks',
-            spec: 'size'
         },
         show: {
             only: Sprite,
@@ -331,46 +270,6 @@ Sprite.prototype.initBlocks = function () {
             type: 'command',
             category: 'looks',
             spec: 'hide'
-        },
-        comeToFront: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'go to front'
-        },
-        goBack: {
-            only: Sprite,
-            type: 'command',
-            category: 'looks',
-            spec: 'go back %n layers',
-            defaults: [1]
-        },
-        doScreenshot: {
-            type: 'command',
-            category: 'looks',
-            spec: 'save %imgsource as costume named %s',
-            defaults: [['pen trails'], localize('screenshot')]
-        },
-
-        // Looks - Debugging primitives for development mode
-        reportCostumes: {
-            dev: true,
-            type: 'reporter',
-            category: 'looks',
-            spec: 'wardrobe'
-        },
-
-        alert: {
-            dev: true,
-            type: 'command',
-            category: 'looks',
-            spec: 'alert %mult%s'
-        },
-        log: {
-            dev: true,
-            type: 'command',
-            category: 'looks',
-            spec: 'console log %mult%s'
         },
 
         // Sound
@@ -682,23 +581,6 @@ Sprite.prototype.initBlocks = function () {
             spec: 'warp %c'
         },
 
-        // Cloning - very experimental
-        receiveOnClone: {
-            type: 'hat',
-            category: 'control',
-            spec: 'when I start as a clone'
-        },
-        createClone: {
-            type: 'command',
-            category: 'control',
-            spec: 'create a clone of %cln'
-        },
-        removeClone: {
-            type: 'command',
-            category: 'control',
-            spec: 'delete this clone'
-        },
-
         // Debugging - pausing
 
         doPauseAll: {
@@ -750,23 +632,6 @@ Sprite.prototype.initBlocks = function () {
             type: 'reporter',
             category: 'sensing',
             spec: 'processes'
-        },
-        doAsk: {
-            type: 'command',
-            category: 'sensing',
-            spec: 'ask %s and wait',
-            defaults: [localize('what\'s your name?')]
-        },
-        reportLastAnswer: { // retained for legacy compatibility
-            dev: true,
-            type: 'reporter',
-            category: 'sensing',
-            spec: 'answer'
-        },
-        getLastAnswer: {
-            type: 'reporter',
-            category: 'sensing',
-            spec: 'answer'
         },
         reportMouseX: {
             type: 'reporter',
@@ -1058,13 +923,6 @@ Sprite.prototype.initBlocks = function () {
             spec: 'script variables %scriptVars'
         },
 
-        // inheritance - experimental
-        doDeleteAttr: {
-            type: 'command',
-            category: 'variables',
-            spec: 'delete %shd'
-        },
-
         // Lists
         reportNewList: {
             type: 'reporter',
@@ -1220,26 +1078,19 @@ Sprite.prototype.initBlockMigrations();
 
 Sprite.prototype.blockAlternatives = {
     // motion:
-    turn: ['turnLeft'],
-    turnLeft: ['turn'],
-    changeXPosition: ['changeYPosition', 'setXPosition', 'setYPosition'],
-    setXPosition: ['setYPosition', 'changeXPosition', 'changeYPosition'],
-    changeYPosition: ['changeXPosition', 'setYPosition', 'setXPosition'],
-    setYPosition: ['setXPosition', 'changeYPosition', 'changeXPosition'],
-    xPosition: ['yPosition'],
-    yPosition: ['xPosition'],
+    changeXPosition: ['changeYPosition', 'changeZPosition', 'setXPosition', 'setYPosition', 'setZPosition'],
+    setXPosition: ['setYPosition', 'setZPosition', 'changeXPosition', 'changeYPosition', 'changeZPosition'],
+    changeYPosition: ['changeXPosition', 'changeZPosition', 'setYPosition', 'setXPosition', 'setZPosition'],
+    setYPosition: ['setXPosition', 'setZPosition', 'changeXPosition', 'changeYPosition', 'changeZPosition'],
+    changeZPosition: ['changeXPosition', 'changeYPosition', 'setXPosition', 'setYPosition', 'setZPosition'],
+    setZPosition: ['setXPosition', 'setYPosition', 'changeXPosition', 'changeYPosition', 'changeZPosition'],
+    xPosition: ['yPosition', 'zPosition'],
+    yPosition: ['xPosition', 'zPosition'],
+    zPosition: ['xPosition', 'yPosition'],
 
     // looks:
-    doSayFor: ['doThinkFor', 'bubble', 'doThink', 'doAsk'],
-    doThinkFor: ['doSayFor', 'doThink', 'bubble', 'doAsk'],
-    bubble: ['doThink', 'doAsk', 'doSayFor', 'doThinkFor'],
-    doThink: ['bubble', 'doAsk', 'doSayFor', 'doThinkFor'],
     show: ['hide'],
     hide: ['show'],
-    changeEffect: ['setEffect'],
-    setEffect: ['changeEffect'],
-    changeScale: ['setScale'],
-    setScale: ['changeScale'],
 
     // sound:
     playSound: ['doPlaySoundUntilDone'],
@@ -1268,9 +1119,6 @@ Sprite.prototype.blockAlternatives = {
     doUntil: ['doRepeat', 'doIf'],
 
     // sensing:
-    doAsk: ['bubble', 'doThink', 'doSayFor', 'doThinkFor'],
-    getLastAnswer: ['getTimer'],
-    getTimer: ['getLastAnswer'],
     reportMouseX: ['reportMouseY'],
     reportMouseY: ['reportMouseX'],
 
@@ -1300,39 +1148,21 @@ function Sprite(globals) {
 
 Sprite.prototype.init = function (globals) {
     this.name = localize('Sprite');
-    this.variables = new VariableFrame(globals || null, this);
-    this.scripts = new ScriptsMorph(this);
-    this.customBlocks = [];
-    this.sounds = new List();
-    this.normalExtent = new Point(60, 60); // only for costume-less situation
-    this.scale = 1;
-    this.rotationStyle = 1; // 1 = full, 2 = left/right, 0 = off
     this.version = Date.now(); // for observer optimization
-    this.isClone = false; // indicate a "temporary" Scratch-style clone
-    this.isCorpse = false; // indicate whether a sprite/clone has been deleted
-    this.cloneOriginName = '';
-
-    // sprite nesting properties
-    this.parts = []; // not serialized, only anchor (name)
-    this.anchor = null;
-    this.nestingScale = 1;
-    this.rotatesWithAnchor = true;
-    this.layers = null; // cache for dragging nested sprites, don't serialize
-
     this.blocksCache = {}; // not to be serialized (!)
     this.paletteCache = {}; // not to be serialized (!)
-    this.rotationOffset = new Point(); // not to be serialized (!)
-    this.idx = 0; // not to be serialized (!) - used for de-serialization
-    this.wasWarped = false; // not to be serialized, used for fast-tracking
 
-    // sprite inheritance
-    this.exemplar = null;
+    if (SERVER_MODE) {
+        this.variables = new VariableFrame(globals || null, this);
+        this.scripts = new ScriptsMorph(this);
+        this.customBlocks = [];
+        this.sounds = new List();
+
+        this.idx = 0; // not to be serialized (!) - used for de-serialization
+        this.wasWarped = false; // not to be serialized, used for fast-tracking
+    }
 
     Sprite.uber.init.call(this);
-
-    this.isDraggable = true;
-    this.isDown = false;
-    this.heading = 90;
 };
 
 // Sprite duplicating (fullCopy)
@@ -1365,17 +1195,6 @@ Sprite.prototype.fullCopy = function (forClone) {
         arr.push(snd);
     });
     c.sounds = new List(arr);
-    arr = [];
-    c.nestingScale = 1;
-    c.rotatesWithAnchor = true;
-    c.anchor = null;
-    c.parts = [];
-    this.parts.forEach(function (part) {
-        var dp = part.fullCopy(forClone);
-        dp.nestingScale = part.nestingScale;
-        dp.rotatesWithAnchor = part.rotatesWithAnchor;
-        c.attachPart(dp);
-    });
     return c;
 };
 
@@ -1471,6 +1290,12 @@ Sprite.prototype.blockTemplates = function (category) {
         return newBlock;
     }
 
+    function helpMenu() {
+        var menu = new MenuMorph(this);
+        menu.addItem('help...', 'showHelp');
+        return menu;
+    }
+
     function addVar(pair) {
         var ide;
         if (pair) {
@@ -1489,50 +1314,35 @@ Sprite.prototype.blockTemplates = function (category) {
 
         blocks.push(block('forward'));
         blocks.push(block('turn'));
-        blocks.push(block('turnLeft'));
         blocks.push('-');
-        blocks.push(block('setHeading'));
+        blocks.push(block('setYaw'));
+        blocks.push(block('setPitch'));
         blocks.push(block('doFaceTowards'));
         blocks.push('-');
-        blocks.push(block('gotoXY'));
+        blocks.push(block('gotoXYZ'));
         blocks.push(block('doGotoObject'));
-        blocks.push(block('doGlide'));
         blocks.push('-');
         blocks.push(block('changeXPosition'));
-        blocks.push(block('setXPosition'));
         blocks.push(block('changeYPosition'));
-        blocks.push(block('setYPosition'));
+        blocks.push(block('changeZPosition'));
         blocks.push('-');
-        blocks.push(block('bounceOffEdge'));
+        blocks.push(block('setXPosition'));
+        blocks.push(block('setYPosition'));
+        blocks.push(block('setZPosition'));
         blocks.push('-');
         blocks.push(block('xPosition'));
         blocks.push(block('yPosition'));
-        blocks.push(block('direction'));
+        blocks.push(block('zPosition'));
+        blocks.push('-');
+        blocks.push(block('yaw'));
+        blocks.push(block('pitch'));
 
     } else if (cat === 'looks') {
 
-        blocks.push(block('doSwitchToCostume'));
-        blocks.push(block('doWearNextCostume'));
-        blocks.push(block('getCostumeIdx'));
-        blocks.push('-');
-        blocks.push(block('doSayFor'));
-        blocks.push(block('bubble'));
-        blocks.push(block('doThinkFor'));
-        blocks.push(block('doThink'));
-        blocks.push('-');
-        blocks.push(block('changeEffect'));
-        blocks.push(block('setEffect'));
-        blocks.push(block('clearEffects'));
-        blocks.push('-');
-        blocks.push(block('changeScale'));
-        blocks.push(block('setScale'));
-        blocks.push(block('getScale'));
+        blocks.push(block('chat'));
         blocks.push('-');
         blocks.push(block('show'));
         blocks.push(block('hide'));
-        blocks.push('-');
-        blocks.push(block('comeToFront'));
-        blocks.push(block('goBack'));
 
     // for debugging: ///////////////
 
@@ -1544,8 +1354,6 @@ Sprite.prototype.blockTemplates = function (category) {
             txt.fontSize = 9;
             txt.setColor(this.paletteTextColor);
             blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('reportCostumes'));
             blocks.push('-');
             blocks.push(block('log'));
             blocks.push(block('alert'));
@@ -1652,10 +1460,6 @@ Sprite.prototype.blockTemplates = function (category) {
         blocks.push(block('doCallCC'));
         blocks.push(block('reportCallCC'));
         blocks.push('-');
-        blocks.push(block('receiveOnClone'));
-        blocks.push(block('createClone'));
-        blocks.push(block('removeClone'));
-        blocks.push('-');
         blocks.push(block('doPauseAll'));
 
     } else if (cat === 'sensing') {
@@ -1663,9 +1467,6 @@ Sprite.prototype.blockTemplates = function (category) {
         blocks.push(block('reportTouchingObject'));
         blocks.push(block('reportTouchingColor'));
         blocks.push(block('reportColorIsTouchingColor'));
-        blocks.push('-');
-        blocks.push(block('doAsk'));
-        blocks.push(block('getLastAnswer'));
         blocks.push('-');
         blocks.push(block('reportMouseX'));
         blocks.push(block('reportMouseY'));
@@ -1828,13 +1629,6 @@ Sprite.prototype.blockTemplates = function (category) {
         blocks.push(block('doShowVar'));
         blocks.push(block('doHideVar'));
         blocks.push(block('doDeclareVariables'));
-
-    // inheritance:
-
-        if (Stage.prototype.enableInheritance) {
-            blocks.push('-');
-            blocks.push(block('doDeleteAttr'));
-        }
 
     ///////////////////////////////
 
@@ -2588,74 +2382,6 @@ Sprite.prototype.reportSounds = function () {
     return this.sounds;
 };
 
-// Sprite cloning
-
-/*
-    clones are temporary, partially shallow copies of sprites that don't
-    appear as icons in the corral. Clones get deleted when the red stop button
-    is pressed. Shallow-copying clones' scripts and costumes makes spawning
-    very fast, so they can be used for particle system simulations.
-    This speed-up, however, comes at the cost of some detrimental side
-    effects: Changes to a costume or a script of the original sprite are
-    in some cases shared with all of its clones, however such shared changes
-    are hard to predict for users and not actively propagated, so they don't
-    offer any reliable feature, and will not be supported as such.
-    Changes to the original sprite's scripts affect all of its clones, unless
-    the script contains any custom block whose definition contains one or more
-    block variables (in which case the script does get deep-copied).
-    The original sprite's scripting area, costumes wardrobe or sounds jukebox
-    are also not shared. therefore adding or deleting a script, sound or
-    costume in the original sprite has no effect on any of its clones.
-*/
-
-Sprite.prototype.createClone = function (immediately) {
-    var stage = this.parentThatIsA(Stage);
-    if (stage && stage.cloneCount <= 2000) {
-        this.fullCopy(true).clonify(stage, immediately);
-    }
-};
-
-Sprite.prototype.clonify = function (stage, immediately) {
-    var hats;
-    this.parts.forEach(function (part) {
-        part.clonify(stage);
-    });
-    stage.cloneCount += 1;
-    this.cloneOriginName = this.isClone ?
-            this.cloneOriginName : this.name;
-    this.isClone = true;
-    this.name = '';
-    stage.add(this);
-    hats = this.allHatBlocksFor('__clone__init__');
-    hats.forEach(function (block) {
-        stage.threads.startProcess(
-            block,
-            stage.isThreadSafe,
-            null, // export result
-            null, // callback
-            null, // is clicked
-            immediately // without yielding
-            );
-    });
-    this.endWarp();
-};
-
-Sprite.prototype.removeClone = function () {
-    if (this.isClone) {
-        this.parent.threads.stopAllForReceiver(this);
-        this.corpsify();
-        this.destroy();
-        this.parent.cloneCount -= 1;
-    }
-};
-
-// Sprite deleting
-
-Sprite.prototype.corpsify = function () {
-    this.isCorpse = true;
-    this.version = Date.now();
-};
-
 // Sprite primitives
 
 // Sprite message broadcasting
@@ -2782,7 +2508,6 @@ Sprite.prototype.receiveUserInteraction = function (interaction) {
 };
 
 Sprite.prototype.mouseDoubleClick = function () {
-    if (this.isClone) {return; }
     this.edit();
 };
 
@@ -2814,12 +2539,6 @@ Sprite.prototype.getLastMessage = function () {
         return stage.getLastMessage();
     }
     return '';
-};
-
-// Sprite user prompting
-
-Sprite.prototype.getLastAnswer = function () {
-    return this.parentThatIsA(Stage).lastAnswer;
 };
 
 // Sprite mouse coordinates
@@ -3044,71 +2763,6 @@ Sprite.prototype.replaceDoubleDefinitionsFor = function (definition) {
     }
 };
 
-// Sprite inheritance - general
-
-Sprite.prototype.chooseExemplar = function () {
-    var stage = this.parentThatIsA(Stage),
-        myself = this,
-        other = stage.children.filter(function (m) {
-            return m instanceof Sprite &&
-                (!contains(m.allExemplars(), myself));
-        }),
-        menu;
-    menu = new MenuMorph(
-        function (aSprite) {myself.setExemplar(aSprite); },
-        localize('current parent') +
-            ':\n' +
-            (this.exemplar ? this.exemplar.name : localize('none'))
-    );
-    other.forEach(function (eachSprite) {
-        menu.addItem(eachSprite.name, eachSprite);
-    });
-    menu.addLine();
-    menu.addItem(localize('none'), null);
-    menu.popUpAtHand(this.world());
-};
-
-Sprite.prototype.setExemplar = function (another) {
-    var ide = this.parentThatIsA(IDE_Morph);
-    this.exemplar = another;
-    if (isNil(another)) {
-        this.variables.parentFrame = (this.globalVariables());
-    } else {
-        this.variables.parentFrame = (another.variables);
-    }
-    if (ide) {
-        ide.flushBlocksCache('variables');
-        ide.refreshPalette();
-    }
-};
-
-Sprite.prototype.allExemplars = function () {
-    // including myself
-    var all = [],
-        current = this;
-    while (!isNil(current)) {
-        all.push(current);
-        current = current.exemplar;
-    }
-    return all;
-};
-
-Sprite.prototype.specimens = function () {
-    // without myself
-    var myself = this;
-    return this.siblings().filter(function (m) {
-        return m instanceof Sprite && (m.exemplar === myself);
-    });
-};
-
-Sprite.prototype.allSpecimens = function () {
-    // without myself
-    var myself = this;
-    return this.siblings().filter(function (m) {
-        return m instanceof Sprite && contains(m.allExemplars(), myself);
-    });
-};
-
 // Sprite inheritance - variables
 
 Sprite.prototype.isVariableNameInUse = function (vName, isGlobal) {
@@ -3280,9 +2934,6 @@ Stage.uber = Node.prototype;
 
 // Stage preferences settings
 
-Stage.prototype.dimensions = new Point(480, 360); // unscaled extent
-Stage.prototype.frameRate = 0; // unscheduled per default
-
 Stage.prototype.isCachingPrimitives
     = Sprite.prototype.isCachingPrimitives;
 
@@ -3296,7 +2947,6 @@ Stage.prototype.hiddenPrimitives = {};
 Stage.prototype.codeMappings = {};
 Stage.prototype.codeHeaders = {};
 Stage.prototype.enableCodeMapping = false;
-Stage.prototype.enableInheritance = false;
 Stage.prototype.enableSublistIDs = false;
 
 // Stage instance creation
@@ -3309,35 +2959,28 @@ Stage.prototype.init = function (ide, globals) {
     this.ide = ide;
 
     this.name = localize('Stage');
-    this.threads = new ThreadManager();
-    this.variables = new VariableFrame(globals || null, this);
     this.scripts = new ScriptsMorph(this);
-    this.customBlocks = [];
-    this.globalBlocks = [];
-    this.sounds = new List();
     this.version = Date.now(); // for observers
-    this.isFastTracked = false;
-    this.enableCustomHatBlocks = true;
-    this.cloneCount = 0;
-
-    this.timerStart = Date.now();
-    this.tempo = 60; // bpm
-    this.lastMessage = '';
-
-    this.scale = 1; // for display modes, do not persist
-
-    this.keysPressed = {}; // for handling keyboard events, do not persist
     this.blocksCache = {}; // not to be serialized (!)
     this.paletteCache = {}; // not to be serialized (!)
-    this.lastAnswer = ''; // last user input, do not persist
-    this.activeSounds = []; // do not persist
 
-    this.trailsCanvas = null;
-    this.isThreadSafe = false;
+    if (SERVER_MODE) {
+        this.threads = new ThreadManager();
+        this.variables = new VariableFrame(globals || null, this);
+        this.customBlocks = [];
+        this.globalBlocks = [];
+        this.sounds = new List();
+        this.isFastTracked = false;
+        this.enableCustomHatBlocks = true;
+        this.isThreadSafe = false;
+
+        this.timerStart = Date.now();
+        this.tempo = 60; // bpm
+        this.lastMessage = '';
+        this.activeSounds = []; // do not persist
+    }
 
     Stage.uber.init.call(this);
-
-    this.acceptsDrops = false;
 };
 
 // Stage timer
@@ -3469,7 +3112,6 @@ Stage.prototype.fireGreenFlagEvent = function () {
 Stage.prototype.fireStopAllEvent = function () {
     var ide = this.parentThatIsA(IDE_Morph);
     this.threads.resumeAll(this.stage);
-    this.keysPressed = {};
     this.threads.stopAll();
     this.stopAllActiveSounds();
     if (ide) {
@@ -3546,16 +3188,7 @@ Stage.prototype.blockTemplates = function (category) {
 
     } else if (cat === 'looks') {
 
-        blocks.push(block('doSwitchToCostume'));
-        blocks.push(block('doWearNextCostume'));
-        blocks.push(block('getCostumeIdx'));
-        blocks.push('-');
-        blocks.push(block('changeEffect'));
-        blocks.push(block('setEffect'));
-        blocks.push(block('clearEffects'));
-        blocks.push('-');
-        blocks.push(block('show'));
-        blocks.push(block('hide'));
+        blocks.push(block('chat'));
 
     // for debugging: ///////////////
 
@@ -3567,8 +3200,6 @@ Stage.prototype.blockTemplates = function (category) {
             txt.fontSize = 9;
             txt.setColor(this.paletteTextColor);
             blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('reportCostumes'));
             blocks.push('-');
             blocks.push(block('log'));
             blocks.push(block('alert'));
@@ -3659,15 +3290,10 @@ Stage.prototype.blockTemplates = function (category) {
         blocks.push(block('doCallCC'));
         blocks.push(block('reportCallCC'));
         blocks.push('-');
-        blocks.push(block('createClone'));
-        blocks.push('-');
         blocks.push(block('doPauseAll'));
 
     } else if (cat === 'sensing') {
 
-        blocks.push(block('doAsk'));
-        blocks.push(block('getLastAnswer'));
-        blocks.push('-');
         blocks.push(block('reportMouseX'));
         blocks.push(block('reportMouseY'));
         blocks.push(block('reportMouseDown'));
@@ -3995,9 +3621,6 @@ Stage.prototype.resumeAllActiveSounds = function () {
 
 Stage.prototype.reportSounds
     = Sprite.prototype.reportSounds;
-
-Stage.prototype.getLastAnswer
-    = Sprite.prototype.getLastAnswer;
 
 Stage.prototype.reportThreadCount
     = Sprite.prototype.reportThreadCount;

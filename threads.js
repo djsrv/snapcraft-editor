@@ -2081,57 +2081,6 @@ Process.prototype.doStopAllSounds = function () {
     }
 };
 
-// Process user prompting primitives (interpolated)
-
-Process.prototype.doAsk = function (data) {
-    var stage = this.homeContext.receiver.parentThatIsA(Stage),
-        rcvr = this.blockReceiver(),
-        isStage = rcvr instanceof Stage,
-        isHiddenSprite = rcvr instanceof Sprite && !rcvr.isVisible,
-        activePrompter;
-
-    stage.keysPressed = {};
-    if (!this.prompter) {
-        activePrompter = detect(
-            stage.children,
-            function (morph) {return morph instanceof StagePrompterMorph; }
-        );
-        if (!activePrompter) {
-            if (!isStage && !isHiddenSprite) {
-                rcvr.bubble(data, false, true);
-            }
-            this.prompter = new StagePrompterMorph(
-                isStage || isHiddenSprite ? data : null
-            );
-            if (stage.scale < 1) {
-                this.prompter.setWidth(stage.width() - 10);
-            } else {
-                this.prompter.setWidth(stage.dimensions.x - 20);
-            }
-            this.prompter.fixLayout();
-            this.prompter.setCenter(stage.center());
-            this.prompter.setBottom(stage.bottom() - this.prompter.border);
-            stage.add(this.prompter);
-            this.prompter.inputField.edit();
-            stage.changed();
-        }
-    } else {
-        if (this.prompter.isDone) {
-            stage.lastAnswer = this.prompter.inputField.getValue();
-            this.prompter.destroy();
-            this.prompter = null;
-            if (!isStage) {rcvr.stopTalking(); }
-            return null;
-        }
-    }
-    this.pushContext('doYield');
-    this.pushContext();
-};
-
-Process.prototype.reportLastAnswer = function () {
-    return this.homeContext.receiver.parentThatIsA(Stage).lastAnswer;
-};
-
 // Process URI retrieval (interpolated)
 
 Process.prototype.reportURL = function (url) {

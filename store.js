@@ -1359,15 +1359,12 @@ Stage.prototype.toXML = function (serializer) {
         '<project name="@" app="@" version="@">' +
             '<notes>$</notes>' +
             '<thumbnail>$</thumbnail>' +
-            '<stage name="@" width="@" height="@" ' +
+            '<stage name="@" ' +
             'tempo="@" threadsafe="@" ' +
-            'lines="@" ' +
             'ternary="@" ' +
             'codify="@" ' +
             'inheritance="@" ' +
-            'sublistIDs="@" ' +
-            'scheduled="@" ~>' +
-            '<pentrails>$</pentrails>' +
+            'sublistIDs="@" ~>' +
             '<sounds>%</sounds>' +
             '<variables>%</variables>' +
             '<blocks>%</blocks>' +
@@ -1385,17 +1382,12 @@ Stage.prototype.toXML = function (serializer) {
         (ide && ide.projectNotes) ? ide.projectNotes : '',
         thumbdata,
         this.name,
-        Stage.prototype.dimensions.x,
-        Stage.prototype.dimensions.y,
         this.getTempo(),
         this.isThreadSafe,
-        Sprite.prototype.useFlatLineEnds ? 'flat' : 'round',
         BooleanSlotMorph.prototype.isTernary,
         this.enableCodeMapping,
         this.enableInheritance,
         this.enableSublistIDs,
-        Stage.prototype.frameRate !== 0,
-        normalizeCanvas(this.trailsCanvas, true).toDataURL('image/png'),
         serializer.store(this.sounds, this.name + '_snd'),
         serializer.store(this.variables),
         serializer.store(this.customBlocks),
@@ -1418,15 +1410,7 @@ Sprite.prototype.toXML = function (serializer) {
         ide = stage ? stage.parentThatIsA(IDE_Morph) : null,
         idx = ide ? ide.sprites.asArray().indexOf(this) + 1 : 0;
     return serializer.format(
-        '<sprite name="@" idx="@" x="@" y="@"' +
-            ' heading="@"' +
-            ' scale="@"' +
-            ' rotation="@"' +
-            ' draggable="@"' +
-            '%' +
-            ' color="@,@,@" pen="@" ~>' +
-            '%' + // inheritance info
-            '%' + // nesting info
+        '<sprite name="@" idx="@" ~>' +
             '<sounds>%</sounds>' +
             '<variables>%</variables>' +
             '<blocks>%</blocks>' +
@@ -1434,38 +1418,6 @@ Sprite.prototype.toXML = function (serializer) {
             '</sprite>',
         this.name,
         idx,
-        this.xPosition(),
-        this.yPosition(),
-        this.heading,
-        this.scale,
-        this.rotationStyle,
-        this.isDraggable,
-        this.isVisible ? '' : ' hidden="true"',
-        this.color.r,
-        this.color.g,
-        this.color.b,
-        this.penPoint,
-
-        // inheritance info
-        this.exemplar
-            ? '<inherit exemplar="' +
-                    this.exemplar.name
-                    + '"/>'
-            : '',
-
-        // nesting info
-        this.anchor
-            ? '<nest anchor="' +
-                    this.anchor.name +
-                    '" synch="'
-                    + this.rotatesWithAnchor
-                    + (this.scale === this.nestingScale ? '' :
-                            '"'
-                            + ' scale="'
-                            + this.nestingScale)
-
-                    + '"/>'
-            : '',
 
         serializer.store(this.sounds, this.name + '_snd'),
         serializer.store(this.variables),

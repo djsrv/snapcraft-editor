@@ -957,18 +957,44 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
         case '%n':
             part = new InputSlotMorph(null, true);
             break;
-        case '%dir':
+        case '%turndir':
+            part = new InputSlotMorph(
+                null, // text
+                false, // non-numeric
+                {
+                    'right' : ['right'],
+                    'left' : ['left'],
+                    'up' : ['up'],
+                    'down' : ['down'],
+                },
+                true // read-only
+            );
+            part.setContents(['right']);
+            break;
+        case '%yaw':
             part = new InputSlotMorph(
                 null,
                 true,
                 {
-                    '(90) right' : 90,
-                    '(-90) left' : -90,
-                    '(0) up' : '0',
-                    '(180) down' : 180
+                    '(-180) north': -180,
+                    '(0) south': '0',
+                    '(-90) east': -90,
+                    '(90) west': 90
                 }
             );
-            part.setContents(90);
+            part.setContents(0);
+            break;
+        case '%pitch':
+            part = new InputSlotMorph(
+                null,
+                true,
+                {
+                    '(-90) straight up' : -90,
+                    '(0) straight ahead' : '0',
+                    '(90) straight down' : 90
+                }
+            );
+            part.setContents(0);
             break;
         case '%inst':
             part = new InputSlotMorph(
@@ -1119,28 +1145,6 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 true
             );
             part.isStatic = true;
-            break;
-        case '%eff':
-            part = new InputSlotMorph(
-                null,
-                false,
-                {
-                    color: ['color'],
-                    fisheye: ['fisheye'],
-                    whirl: ['whirl'],
-                    pixelate: ['pixelate'],
-                    mosaic: ['mosaic'],
-                    duplicate: ['duplicate'],
-                    negative : ['negative'],
-                    comic: ['comic'],
-                    confetti: ['confetti'],
-                    saturation: ['saturation'],
-                    brightness : ['brightness'],
-                    ghost: ['ghost']
-                },
-                true
-            );
-            part.setContents(['ghost']);
             break;
         case '%snd':
             part = new InputSlotMorph(
