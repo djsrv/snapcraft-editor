@@ -1363,7 +1363,6 @@ Stage.prototype.toXML = function (serializer) {
             'tempo="@" threadsafe="@" ' +
             'ternary="@" ' +
             'codify="@" ' +
-            'inheritance="@" ' +
             'sublistIDs="@" ~>' +
             '<sounds>%</sounds>' +
             '<variables>%</variables>' +
@@ -1386,7 +1385,6 @@ Stage.prototype.toXML = function (serializer) {
         this.isThreadSafe,
         BooleanSlotMorph.prototype.isTernary,
         this.enableCodeMapping,
-        this.enableInheritance,
         this.enableSublistIDs,
         serializer.store(this.sounds, this.name + '_snd'),
         serializer.store(this.variables),
