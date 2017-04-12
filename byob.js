@@ -1311,6 +1311,7 @@ JaggedBlockMorph.prototype.drawEdges = function (context) {
     }
 };
 
+if (!SERVER_MODE) {
 // BlockDialogMorph ////////////////////////////////////////////////////
 
 // BlockDialogMorph inherits from DialogBoxMorph:
@@ -2129,6 +2130,7 @@ BlockEditorMorph.prototype.fixLayout = function () {
         this.buttons.setBottom(this.bottom() - this.padding);
     }
 };
+}
 
 // PrototypeHatBlockMorph /////////////////////////////////////////////
 
@@ -2674,6 +2676,7 @@ BlockInputFragmentMorph.prototype.mouseClickLeft
 BlockInputFragmentMorph.prototype.updateBlockLabel
     = BlockLabelFragmentMorph.prototype.updateBlockLabel;
 
+if (!SERVER_MODE) {
 // InputSlotDialogMorph ////////////////////////////////////////////////
 
 // ... "inherits" some methods from BlockDialogMorph
@@ -3312,7 +3315,9 @@ InputSlotDialogMorph.prototype.show = function () {
     this.isVisible = true;
     this.changed();
 };
+}
 
+if (!SERVER_MODE) {
 // VariableDialogMorph ////////////////////////////////////////////////////
 
 // VariableDialogMorph inherits from DialogBoxMorph:
@@ -3431,7 +3436,9 @@ VariableDialogMorph.prototype.fixLayout = function () {
         this.buttons.setBottom(this.bottom() - this.padding);
     }
 };
+}
 
+if (!SERVER_MODE) {
 // BlockExportDialogMorph ////////////////////////////////////////////////////
 
 // BlockExportDialogMorph inherits from DialogBoxMorph:
@@ -3708,7 +3715,9 @@ BlockImportDialogMorph.prototype.importBlocks = function (name) {
 
 BlockImportDialogMorph.prototype.fixLayout
     = BlockEditorMorph.prototype.fixLayout;
+}
 
+if (!SERVER_MODE) {
 // BlockRemovalDialogMorph ///////////////////////////////////////////////////
 
 // BlockRemovalDialogMorph inherits from DialogBoxMorph
@@ -3801,3 +3810,4 @@ BlockRemovalDialogMorph.prototype.removeBlocks = function () {
 
 BlockRemovalDialogMorph.prototype.fixLayout
     = BlockEditorMorph.prototype.fixLayout;
+}
