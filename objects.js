@@ -1875,6 +1875,7 @@ Sprite.prototype.freshPalette = function (category) {
 
     // global custom blocks:
 
+    /*
     if (stage) {
         y += unit * 1.6;
 
@@ -1895,9 +1896,11 @@ Sprite.prototype.freshPalette = function (category) {
             }
         });
     }
+    */
 
     // local custom blocks:
 
+    /*
     y += unit * 1.6;
     this.customBlocks.forEach(function (definition) {
         var block;
@@ -1915,6 +1918,7 @@ Sprite.prototype.freshPalette = function (category) {
             y += block.height();
         }
     });
+    */
 
     //layout
 
@@ -2951,22 +2955,22 @@ Stage.prototype.enableSublistIDs = false;
 
 // Stage instance creation
 
-function Stage(globals) {
-    this.init(globals);
+function Stage(settings) {
+    this.init(settings);
 }
 
-Stage.prototype.init = function (ide, globals) {
-    this.ide = ide;
-
-    this.name = localize('Stage');
+Stage.prototype.init = function (settings) {
+    this.name = localize(settings.name || world);
     this.scripts = new ScriptsMorph(this);
     this.version = Date.now(); // for observers
     this.blocksCache = {}; // not to be serialized (!)
     this.paletteCache = {}; // not to be serialized (!)
 
     if (SERVER_MODE) {
+        this.server = settings.server;
+
         this.threads = new ThreadManager();
-        this.variables = new VariableFrame(globals || null, this);
+        this.variables = new VariableFrame(null, this);
         this.customBlocks = [];
         this.globalBlocks = [];
         this.sounds = new List();
@@ -2978,6 +2982,10 @@ Stage.prototype.init = function (ide, globals) {
         this.tempo = 60; // bpm
         this.lastMessage = '';
         this.activeSounds = []; // do not persist
+    } else {
+        this.ide = settings.ide;
+        this.serverSettings = settings.serverStageSettings;
+        this.serverIsPaused = settings.serverIsPaused;
     }
 
     Stage.uber.init.call(this);
@@ -3089,7 +3097,6 @@ Stage.prototype.stepGenericConditions = function (stopAll) {
 Stage.prototype.fireGreenFlagEvent = function () {
     var procs = [],
         hats = [],
-        ide = this.parentThatIsA(IDE_Morph),
         myself = this;
 
     this.children.concat(this).forEach(function (morph) {
@@ -3103,23 +3110,16 @@ Stage.prototype.fireGreenFlagEvent = function () {
             myself.isThreadSafe
         ));
     });
-    if (ide) {
-        ide.controlBar.pauseButton.refresh();
-    }
+    this.server.updateIsPaused();
     return procs;
 };
 
 Stage.prototype.fireStopAllEvent = function () {
-    var ide = this.parentThatIsA(IDE_Morph);
+    // var ide = this.parentThatIsA(IDE_Morph);
     this.threads.resumeAll(this.stage);
     this.threads.stopAll();
     this.stopAllActiveSounds();
-    if (ide) {
-        ide.nextSteps([
-            nop,
-            function () {ide.controlBar.pauseButton.refresh(); }
-        ]);
-    }
+    this.server.updateIsPaused();
 };
 
 Stage.prototype.editScripts = function () {
@@ -3533,43 +3533,7 @@ Stage.prototype.thumbnail = function (extentPoint, excludedSprite) {
     answer a new Canvas of extentPoint dimensions containing
     my thumbnail representation keeping the originial aspect ratio
 */
-    var myself = this,
-        src = this.image,
-        scale = Math.min(
-            (extentPoint.x / src.width),
-            (extentPoint.y / src.height)
-        ),
-        trg = newCanvas(extentPoint),
-        ctx = trg.getContext('2d'),
-        fb,
-        fimg;
-
-    ctx.scale(scale, scale);
-    ctx.drawImage(
-        src,
-        0,
-        0
-    );
-    ctx.drawImage(
-        this.penTrails(),
-        0,
-        0,
-        this.dimensions.x * this.scale,
-        this.dimensions.y * this.scale
-    );
-    this.children.forEach(function (morph) {
-        if (morph.isVisible && (morph !== excludedSprite)) {
-            fb = morph.fullBounds();
-            fimg = morph.fullImage();
-            if (fimg.width && fimg.height) {
-                ctx.drawImage(
-                    morph.fullImage(),
-                    fb.origin.x - myself.bounds.origin.x,
-                    fb.origin.y - myself.bounds.origin.y
-                );
-            }
-        }
-    });
+    var trg = newCanvas(extentPoint);
     return trg;
 };
 

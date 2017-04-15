@@ -200,11 +200,11 @@ IDE_Morph.prototype.setDefaultDesign();
 
 // IDE_Morph instance creation:
 
-function IDE_Morph(isAutoFill) {
-    this.init(isAutoFill);
+function IDE_Morph(settings) {
+    this.init(settings);
 }
 
-IDE_Morph.prototype.init = function (isAutoFill) {
+IDE_Morph.prototype.init = function (settings) {
     // global font setting
     MorphicPreferences.globalFontFamily = 'Helvetica, Arial';
 
@@ -219,8 +219,8 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.serializer = new SnapSerializer();
 
     this.globalVariables = new VariableFrame();
-    this.currentSprite = new Sprite(this.globalVariables);
-    this.sprites = new List([this.currentSprite]);
+    this.currentSprite = null;
+    this.sprites = new List();
     this.currentCategory = 'motion';
     this.currentTab = 'scripts';
     this.projectName = '';
@@ -235,12 +235,18 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.spriteBar = null;
     this.spriteEditor = null;
     this.stage = null;
-    this.createStage();
+    this.createStage({
+        name: settings.name,
+        serverStageSettings: settings.serverStageSettings,
+        serverIsPaused: settings.serverIsPaused,
+        ide: this
+    });
+    this.currentSprite = this.stage;
     this.stageHandle = null;
     this.corralBar = null;
     this.corral = null;
 
-    this.isAutoFill = isAutoFill === undefined ? true : isAutoFill;
+    this.isAutoFill = settings.isAutoFill === undefined ? true : settings.isAutoFill;
     this.isAppMode = false;
     this.isSmallStage = false;
     this.filePicker = null;
@@ -260,6 +266,8 @@ IDE_Morph.prototype.init = function (isAutoFill) {
 
     // override inherited properites:
     this.color = this.backgroundColor;
+
+    this.client = settings.client;
 };
 
 IDE_Morph.prototype.openIn = function (world) {
@@ -601,8 +609,8 @@ IDE_Morph.prototype.createControlBar = function () {
         ],
         function () {  // query
             return myself.stage ?
-                    myself.stage.enableCustomHatBlocks &&
-                        myself.stage.threads.pauseCustomHatBlocks
+                    myself.stage.serverSettings.enableCustomHatBlocks &&
+                        myself.stage.serverSettings.pauseCustomHatBlocks
                         : true;
         }
     );
@@ -809,7 +817,7 @@ IDE_Morph.prototype.createControlBar = function () {
         var pauseSymbols;
         if (Process.prototype.enableSingleStepping &&
                 Process.prototype.flashTime > 0.5) {
-            myself.stage.threads.pauseAll(myself.stage);
+            myself.client.pauseAll();
             pauseSymbols = [
                 new SymbolMorph('pause', 12),
                 new SymbolMorph('stepForward', 14)
@@ -1012,12 +1020,9 @@ IDE_Morph.prototype.createPaletteHandle = function () {
     this.add(this.paletteHandle);
 };
 
-IDE_Morph.prototype.createStage = function () {
+IDE_Morph.prototype.createStage = function (settings) {
     // assumes that the logo pane has already been created
-    this.stage = new Stage(this, this.globalVariables);
-    if (this.currentSprite instanceof Sprite) {
-        this.stage.addChild(this.currentSprite);
-    }
+    this.stage = new Stage(settings);
 };
 
 IDE_Morph.prototype.createStageHandle = function () {
@@ -1202,6 +1207,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
     tab.fixLayout();
     tabBar.add(tab);
 
+    /*
     tab = new TabMorph(
         tabColors,
         null, // target
@@ -1241,6 +1247,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
     tab.drawNew();
     tab.fixLayout();
     tabBar.add(tab);
+    */
 
     tabBar.fixLayout();
     tabBar.children.forEach(function (each) {
@@ -1703,14 +1710,14 @@ IDE_Morph.prototype.pressStart = function () {
     if (this.world().currentKey === 16) { // shiftClicked
         this.toggleFastTracking();
     } else {
-        this.stage.threads.pauseCustomHatBlocks = false;
+        this.client.setStageSetting('pauseCustomHatBlocks', false);
         this.controlBar.stopButton.refresh();
         this.runScripts();
     }
 };
 
 IDE_Morph.prototype.toggleFastTracking = function () {
-    if (this.stage.isFastTracked) {
+    if (this.stage.serverSettings.isFastTracked) {
         this.stopFastTracking();
     } else {
         this.startFastTracking();
@@ -1723,48 +1730,48 @@ IDE_Morph.prototype.toggleSingleStepping = function () {
 };
 
 IDE_Morph.prototype.startFastTracking = function () {
-    this.stage.isFastTracked = true;
-    this.stage.fps = 0;
+    this.client.setStageSetting('isFastTracked', true);
     this.controlBar.startButton.labelString = new SymbolMorph('flash', 14);
     this.controlBar.startButton.drawNew();
     this.controlBar.startButton.fixLayout();
 };
 
 IDE_Morph.prototype.stopFastTracking = function () {
-    this.stage.isFastTracked = false;
-    this.stage.fps = this.stage.frameRate;
+    this.client.setStageSetting('isFastTracked', false);
     this.controlBar.startButton.labelString = new SymbolMorph('flag', 14);
     this.controlBar.startButton.drawNew();
     this.controlBar.startButton.fixLayout();
 };
 
 IDE_Morph.prototype.runScripts = function () {
-    this.stage.fireGreenFlagEvent();
+    this.client.fireGreenFlagEvent();
 };
 
 IDE_Morph.prototype.togglePauseResume = function () {
-    if (this.stage.threads.isPaused()) {
-        this.stage.threads.resumeAll(this.stage);
+    if (this.stage.serverIsPaused) {
+        this.client.resumeAll();
     } else {
-        this.stage.threads.pauseAll(this.stage);
+        this.client.pauseAll();
     }
     this.controlBar.pauseButton.refresh();
 };
 
 IDE_Morph.prototype.isPaused = function () {
     if (!this.stage) {return false; }
-    return this.stage.threads.isPaused();
+    return this.stage.serverIsPaused;
 };
 
 IDE_Morph.prototype.stopAllScripts = function () {
-    if (this.stage.enableCustomHatBlocks) {
-        this.stage.threads.pauseCustomHatBlocks =
-            !this.stage.threads.pauseCustomHatBlocks;
+    if (this.stage.serverSettings.enableCustomHatBlocks) {
+        this.client.setStageSetting(
+            'pauseCustomHatBlocks',
+            !this.stage.serverSettings.pauseCustomHatBlocks
+        );
     } else {
-        this.stage.threads.pauseCustomHatBlocks = false;
+        this.client.setStageSetting('pauseCustomHatBlocks', false);
     }
     this.controlBar.stopButton.refresh();
-    this.stage.fireStopAllEvent();
+    this.client.fireStopAllEvent();
 };
 
 IDE_Morph.prototype.selectSprite = function (sprite) {
@@ -1790,7 +1797,6 @@ IDE_Morph.prototype.toggleRetina = function () {
     }
     this.world().fillPage();
     IDE_Morph.prototype.scriptsPaneTexture = this.scriptsTexture();
-    this.stage.clearPenTrails();
     this.drawNew();
     this.refreshIDE();
 };
@@ -2387,7 +2393,7 @@ IDE_Morph.prototype.settingsMenu = function () {
     addPreference(
         'Turbo mode',
         'toggleFastTracking',
-        this.stage.isFastTracked,
+        this.stage.serverSettings.isFastTracked,
         'uncheck to run scripts\nat normal speed',
         'check to prioritize\nscript execution'
     );
@@ -2554,20 +2560,15 @@ IDE_Morph.prototype.settingsMenu = function () {
     menu.addLine(); // everything below this line is stored in the project
     addPreference(
         'Thread safe scripts',
-        function () {stage.isThreadSafe = !stage.isThreadSafe; },
-        this.stage.isThreadSafe,
+        function () {
+             myself.client.setStageSetting(
+                 'isThreadSafe',
+                 !stage.serverSettings.isThreadSafe
+             );
+        },
+        this.stage.serverSettings.isThreadSafe,
         'uncheck to allow\nscript reentrance',
         'check to disallow\nscript reentrance'
-    );
-    addPreference(
-        'Flat line ends',
-        function () {
-            Sprite.prototype.useFlatLineEnds =
-                !Sprite.prototype.useFlatLineEnds;
-        },
-        Sprite.prototype.useFlatLineEnds,
-        'uncheck for round ends of lines',
-        'check for flat ends of lines'
     );
     addPreference(
         'Ternary Boolean slots',
@@ -3229,13 +3230,14 @@ IDE_Morph.prototype.editProjectNotes = function () {
 };
 
 IDE_Morph.prototype.newProject = function () {
+    /*
     this.source = SnapCloud.username ? 'cloud' : 'local';
     if (location.hash.substr(0, 6) !== '#lang:') {
         location.hash = '';
     }
     this.globalVariables = new VariableFrame();
-    this.currentSprite = new Sprite(this.globalVariables);
-    this.sprites = new List([this.currentSprite]);
+    this.currentSprite = null;
+    this.sprites = new List();
     Stage.prototype.hiddenPrimitives = {};
     Stage.prototype.codeMappings = {};
     Stage.prototype.codeHeaders = {};
@@ -3247,8 +3249,9 @@ IDE_Morph.prototype.newProject = function () {
     this.setProjectName('');
     this.projectNotes = '';
     this.createStage();
-    this.selectSprite(this.stage.children[0]);
+    this.selectSprite(this.stage);
     this.fixLayout();
+    */
 };
 
 IDE_Morph.prototype.save = function () {
