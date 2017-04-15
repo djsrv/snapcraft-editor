@@ -32,6 +32,7 @@ Client.prototype.init = function (world) {
     this.socket.on('init_ide', this.initIDEFromServer.bind(this));
     this.socket.on('update_stage_setting', this.updateStageSettingFromServer.bind(this));
     this.socket.on('update_isPaused', this.updateIsPausedFromServer.bind(this));
+    this.socket.on('flush_blocks_cache', this.flushBlocksCacheFromServer.bind(this));
 };
 
 /* Server -> Client */
@@ -53,6 +54,18 @@ Client.prototype.updateIsPausedFromServer = function (data) {
     this.ide.stage.serverIsPaused = data.flag;
     this.ide.controlBar.pauseButton.refresh();
 };
+
+Client.prototype.flushBlocksCacheFromServer = function (data) {
+    var obj;
+    if (data.objectUUID) {
+        obj = this.ide.objectWithUUID(data.objectUUID);
+        obj.blocksCache[data.category] = null;
+        obj.paletteCache[data.category] = null;
+    } else {
+        this.ide.flushBlocksCache(data.category);
+    }
+    this.ide.refreshPalette();
+}
 
 /* Client -> Server */
 
@@ -80,18 +93,65 @@ Client.prototype.resumeAll = function () {
 };
 
 Client.prototype.requestBlockTemplates = function (objectUUID, category, callback) {
-    var myself = this;
+    var myself = this,
+        requestID = uuid.v1();
 
-    function blockTemplatesReceived (data) {
-        if (data.objectUUID === objectUUID && data.category === category) {
-            myself.socket.removeListener('block_templates', blockTemplatesReceived);
+    function serverCallback (data) {
+        if (data.requestID === requestID) {
+            myself.socket.removeListener('block_templates_callback', serverCallback);
             callback(data.templates);
         }
     }
+    this.socket.on('block_templates_callback', serverCallback);
 
-    this.socket.on('block_templates', blockTemplatesReceived);
     this.socket.emit('request_block_templates', {
+        requestID: requestID,
         objectUUID: objectUUID,
         category: category
+    });
+};
+
+Client.prototype.requestVarNames = function (objectUUID, callback) {
+    var myself = this,
+        requestID = uuid.v1();
+
+    function serverCallback (data) {
+        if (data.requestID === requestID) {
+            myself.socket.removeListener('var_names_callback', serverCallback);
+            callback(data.varNames);
+        }
+    }
+    this.socket.on('var_names_callback', serverCallback);
+
+    this.socket.emit('request_var_names', {
+        requestID: requestID,
+        objectUUID: objectUUID
+    });
+};
+
+Client.prototype.addVar = function (objectUUID, name, isGlobal, callback) {
+    var myself = this,
+        requestID = uuid.v1();
+
+    function serverCallback (data) {
+        if (data.requestID === requestID) {
+            myself.socket.removeListener('add_var_callback', serverCallback);
+            callback(data.error);
+        }
+    }
+    this.socket.on('add_var_callback', serverCallback);
+
+    this.socket.emit('add_var', {
+        requestID: requestID,
+        objectUUID: objectUUID,
+        name: name,
+        isGlobal: isGlobal
+    });
+};
+
+Client.prototype.deleteVar = function (objectUUID, name) {
+    this.socket.emit('delete_var', {
+        objectUUID: objectUUID,
+        name: name
     });
 };

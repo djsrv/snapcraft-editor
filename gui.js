@@ -5134,6 +5134,14 @@ IDE_Morph.prototype.prompt = function (message, callback, choices, key) {
     );
 };
 
+// SnapCraft!
+
+IDE_Morph.prototype.objectWithUUID = function (objectUUID) {
+    if (objectUUID === this.stage.uuid) {
+        return this.stage;
+    }
+};
+
 // ProjectDialogMorph ////////////////////////////////////////////////////
 
 // ProjectDialogMorph inherits from DialogBoxMorph:

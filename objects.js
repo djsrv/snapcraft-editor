@@ -1734,7 +1734,7 @@ Sprite.prototype.freshPalette = function (category, callback) {
         palette = freshPaletteWithBlocks(category, blocks);
         callback(palette);
     } else {
-        myself.getBlockTemplates(category, function (blocks) {
+        myself.blockTemplates_Client(category, function (blocks) {
             if (this.isCachingPrimitives) {
                 myself.blocksCache[category] = blocks;
             }
@@ -2348,26 +2348,41 @@ Sprite.prototype.reporterize = function (expressionString) {
 
 // Sprite variable management
 
+Sprite.prototype.userAddVar_Client = function (pair) {
+    var ide = this.parentThatIsA(Stage).ide;
+    if (pair) {
+        ide.client.addVar(this.uuid, pair[0], pair[1], function (error) {
+            if (error) {
+                ide.world().inform(error);
+            }
+        });
+    }
+}
+
+Sprite.prototype.userAddVar_Server = function (name, isGlobal) {
+    if (this.isVariableNameInUse(name)) {
+        return 'that name is already in use';
+    } else {
+        this.addVariable(name, isGlobal);
+        return null;
+    }
+}
+
 Sprite.prototype.addVariable = function (name, isGlobal) {
-    var ide = this.parentThatIsA(IDE_Morph);
+    var server = this.parentThatIsA(Stage).server;
     if (isGlobal) {
         this.globalVariables().addVar(name);
-        if (ide) {
-            ide.flushBlocksCache('variables');
-        }
+        server.flushBlocksCache('variables', null);
     } else {
         this.variables.addVar(name);
-        this.blocksCache.variables = null;
+        server.flushBlocksCache('variables', this.uuid)
     }
 };
 
 Sprite.prototype.deleteVariable = function (varName) {
-    var ide = this.parentThatIsA(IDE_Morph);
+    var server = this.parentThatIsA(Stage).server;
     this.variables.deleteVar(varName);
-    if (ide) {
-        ide.flushBlocksCache('variables'); // b/c the var could be global
-        ide.refreshPalette();
-    }
+    server.flushBlocksCache('variables'); // b/c the var could be global
 };
 
 // Sprite sound management
@@ -2977,14 +2992,12 @@ Stage.prototype.init = function (settings) {
     this.uuid = settings.uuid;
     this.scripts = new ScriptsMorph(this);
     this.version = Date.now(); // for observers
-    this.blocksCache = {}; // not to be serialized (!)
-    this.paletteCache = {}; // not to be serialized (!)
 
     if (SERVER_MODE) {
         this.server = settings.server;
 
         this.threads = new ThreadManager();
-        this.variables = new VariableFrame(null, this);
+        this.variables = new VariableFrame(settings.globals || null, this);
         this.customBlocks = [];
         this.globalBlocks = [];
         this.sounds = new List();
@@ -3000,6 +3013,8 @@ Stage.prototype.init = function (settings) {
         this.ide = settings.ide;
         this.serverSettings = settings.serverSettings;
         this.serverIsPaused = settings.serverIsPaused;
+        this.blocksCache = {}; // not to be serialized (!)
+        this.paletteCache = {}; // not to be serialized (!)
     }
 
     Stage.uber.init.call(this);
@@ -3157,7 +3172,7 @@ Stage.prototype.editScripts = function () {
 
 // Stage block templates
 
-Stage.prototype.getBlockTemplates = function (category, callback) {
+Stage.prototype.blockTemplates_Client = function (category, callback) {
     var myself = this;
     this.ide.client.requestBlockTemplates(this.uuid, category, function (templates) {
         callback(myself.processBlockTemplates(templates));
@@ -3199,12 +3214,12 @@ Stage.prototype.processBlockTemplates = function (blocksJSON) {
                 function () {
                     new VariableDialogMorph(
                         null,
-                        addVar,
+                        myself.userAddVar_Client.bind(myself),
                         myself
                     ).prompt(
                         'Variable name',
                         null,
-                        myself.world()
+                        myself.ide.world()
                     );
                 },
                 'Make a variable'
@@ -3215,15 +3230,19 @@ Stage.prototype.processBlockTemplates = function (blocksJSON) {
             button = new PushButtonMorph(
                 null,
                 function () {
-                    var menu = new MenuMorph(
-                        myself.deleteVariable,
-                        null,
-                        myself
-                    );
-                    myself.variables.allNames().forEach(function (name) {
-                        menu.addItem(name, name);
+                    myself.ide.client.requestVarNames(myself.uuid, function (varNames) {
+                        var menu = new MenuMorph(
+                            function (varName) {
+                                myself.ide.client.deleteVar(myself.uuid, varName);
+                            },
+                            null,
+                            myself
+                        );
+                        varNames.forEach(function (name) {
+                            menu.addItem(name, name);
+                        });
+                        menu.popUpAtHand(myself.ide.world());
                     });
-                    menu.popUpAtHand(myself.world());
                 },
                 'Delete a variable'
             );
@@ -3252,7 +3271,7 @@ Stage.prototype.processBlockTemplates = function (blocksJSON) {
                     ).prompt(
                         'Make a block',
                         null,
-                        myself.world()
+                        myself.ide.world()
                     );
                 },
                 'Make a block'
@@ -3260,19 +3279,6 @@ Stage.prototype.processBlockTemplates = function (blocksJSON) {
             return button;
         }
         return null;
-    }
-
-    function addVar(pair) {
-        if (pair) {
-            if (myself.isVariableNameInUse(pair[0])) {
-                myself.inform('that name is already in use');
-            } else {
-                myself.addVariable(pair[0], pair[1]);
-                myself.blocksCache[cat] = null;
-                myself.paletteCache[cat] = null;
-                myself.parentThatIsA(IDE_Morph).refreshPalette();
-            }
-        }
     }
 
     function process(items) {
@@ -3299,7 +3305,7 @@ Stage.prototype.processBlockTemplates = function (blocksJSON) {
     return blocks;
 };
 
-Stage.prototype.blockTemplatesJSON = function (category) {
+Stage.prototype.blockTemplates_Server = function (category) {
     var blocks = [], myself = this, varNames,
         cat = category || 'motion', devBlocks;
 
@@ -3594,7 +3600,7 @@ Stage.prototype.blockTemplatesJSON = function (category) {
             blocks.push('=');
         }
 
-        blocks.push(button('makeBlock'));
+        // blocks.push(button('makeBlock'));
     }
     return blocks;
 };
@@ -3622,6 +3628,8 @@ Stage.prototype.freshPaletteWithBlocks = Sprite.prototype.freshPaletteWithBlocks
 Stage.prototype.blocksMatching = Sprite.prototype.blocksMatching;
 Stage.prototype.searchBlocks = Sprite.prototype.searchBlocks;
 Stage.prototype.reporterize = Sprite.prototype.reporterize;
+Stage.prototype.userAddVar_Client = Sprite.prototype.userAddVar_Client;
+Stage.prototype.userAddVar_Server = Sprite.prototype.userAddVar_Server;
 Stage.prototype.addVariable = Sprite.prototype.addVariable;
 Stage.prototype.deleteVariable = Sprite.prototype.deleteVariable;
 

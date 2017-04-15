@@ -72,6 +72,12 @@ Server.prototype.tick = function () {
     setTimeout(this.tick.bind(this), 1000);
 };
 
+Server.prototype.objectWithUUID = function (objectUUID) {
+    if (objectUUID === this.stage.uuid) {
+        return this.stage;
+    }
+};
+
 /* Client -> Server */
 
 Server.prototype.onConnection = function (socket) {
@@ -85,6 +91,9 @@ Server.prototype.onConnection = function (socket) {
     socket.on('pause_all', this.pauseAllFromClient.bind(this, socket));
     socket.on('resume_all', this.resumeAllFromClient.bind(this, socket));
     socket.on('request_block_templates', this.requestBlockTemplatesFromClient.bind(this, socket));
+    socket.on('request_var_names', this.requestVarNamesFromClient.bind(this, socket));
+    socket.on('add_var', this.addVarFromClient.bind(this, socket));
+    socket.on('delete_var', this.deleteVarFromClient.bind(this, socket));
 
     this.initIDE(socket);
 };
@@ -138,22 +147,50 @@ Server.prototype.resumeAllFromClient = function (socket, data) {
 };
 
 Server.prototype.requestBlockTemplatesFromClient = function (socket, data) {
-    var templates;
+    var templates, obj;
     console.log(socket.id + ' requested ' + data.category + ' templates for ' + data.objectUUID);
-    if (data.objectUUID === this.stage.uuid) {
-        templates = this.stage.blockTemplatesJSON(data.category);
-    }
+    obj = this.objectWithUUID(data.objectUUID);
+    templates = obj.blockTemplates_Server(data.category);
     if (templates) {
-        console.log('Sending ' + data.category + ' templates for ' + data.objectUUID + ' to ' + socket.id);
-        socket.emit('block_templates', {
-            objectUUID: data.objectUUID,
-            category: data.category,
+        socket.emit('block_templates_callback', {
+            requestID: data.requestID,
             templates: templates
         });
-    } else {
-        console.log('Could not create ' + data.category + ' templates for ' + data.objectUUID);
     }
-}
+};
+
+Server.prototype.requestVarNamesFromClient = function (socket, data) {
+    var obj, varNames;
+    console.log(socket.id + ' requested var names for ' + data.objectUUID);
+    obj = this.objectWithUUID(data.objectUUID);
+    varNames = obj.variables.allNames();
+    socket.emit('var_names_callback', {
+        requestID: data.requestID,
+        varNames: varNames
+    });
+};
+
+Server.prototype.addVarFromClient = function (socket, data) {
+    var myself = this,
+        obj, error;
+    console.log(socket.id + ' added ' + (data.isGlobal ? 'global ' : '') + 'var ' + data.name + ' to ' + data.objectUUID);
+    obj = this.objectWithUUID(data.objectUUID);
+    error = obj.userAddVar_Server(data.name, data.isGlobal);
+    if (error) {
+        console.log('Var creation error: ' + error);
+    }
+    socket.emit('add_var_callback', {
+        requestID: data.requestID,
+        error: error
+    });
+};
+
+Server.prototype.deleteVarFromClient = function (socket, data) {
+    var obj;
+    console.log(socket.id + ' deleted var ' + data.name + ' from ' + data.objectUUID);
+    obj = this.objectWithUUID(data.objectUUID);
+    obj.deleteVariable(data.name);
+};
 
 /* Server -> Client */
 
@@ -187,6 +224,18 @@ Server.prototype.updateIsPaused = function () {
             flag: isPaused
         });
     }
+};
+
+Server.prototype.flushBlocksCache = function (category, objectUUID) {
+    if (objectUUID) {
+        console.log('Flushing ' + category + ' blocks cache for ' + objectUUID);
+    } else {
+        console.log('Flushing ' + category + ' blocks cache');
+    }
+    this.io.emit('flush_blocks_cache', {
+        category: category,
+        objectUUID: objectUUID
+    });
 };
 
 var server = new Server({
