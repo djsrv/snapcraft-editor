@@ -3901,10 +3901,10 @@ BlockMorph.prototype.snap = function () {
         if (receiver) {
             stage = receiver.parentThatIsA(Stage);
             if (stage) {
-                stage.enableCustomHatBlocks = true;
-                stage.threads.pauseCustomHatBlocks = false;
-                ide = stage.parentThatIsA(IDE_Morph);
+                ide = stage.ide;
                 if (ide) {
+                    ide.client.setStageSetting('enableCustomHatBlocks', true);
+                    ide.client.setStageSetting('pauseCustomHatBlocks', false);
                     ide.controlBar.stopButton.refresh();
                 }
             }
