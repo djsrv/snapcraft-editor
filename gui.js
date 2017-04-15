@@ -236,9 +236,10 @@ IDE_Morph.prototype.init = function (settings) {
     this.spriteEditor = null;
     this.stage = null;
     this.createStage({
-        name: settings.name,
-        serverStageSettings: settings.serverStageSettings,
-        serverIsPaused: settings.serverIsPaused,
+        name: settings.stageName,
+        uuid: settings.stageUUID,
+        serverSettings: settings.stageSettings,
+        serverIsPaused: settings.isPaused,
         ide: this
     });
     this.currentSprite = this.stage;
@@ -955,62 +956,76 @@ IDE_Morph.prototype.createCategories = function () {
     this.add(this.categories);
 };
 
-IDE_Morph.prototype.createPalette = function (forSearching) {
+IDE_Morph.prototype.createPalette = function (forSearching, callback) {
     // assumes that the logo pane has already been created
     // needs the categories pane for layout
-    var myself = this;
+    var category = this.currentCategory,
+        myself = this, palette;
 
     if (this.palette) {
         this.palette.destroy();
     }
 
     if (forSearching) {
-        this.palette = new ScrollFrameMorph(
+        var palette = new ScrollFrameMorph(
             null,
             null,
             this.currentSprite.sliderColor
         );
+        initPalette(palette);
     } else {
-        this.palette = this.currentSprite.palette(this.currentCategory);
+        this.currentSprite.palette(category, initPalette);
     }
-    this.palette.isDraggable = false;
-    this.palette.acceptsDrops = true;
-    this.palette.enableAutoScrolling = false;
-    this.palette.contents.acceptsDrops = false;
 
-    this.palette.reactToDropOf = function (droppedMorph, hand) {
-        if (droppedMorph instanceof DialogBoxMorph) {
-            myself.world().add(droppedMorph);
-        } else if (droppedMorph instanceof Sprite) {
-            myself.removeSprite(droppedMorph);
-        } else if (droppedMorph instanceof SpriteIconMorph) {
-            droppedMorph.destroy();
-            myself.removeSprite(droppedMorph.object);
-        } else if (droppedMorph instanceof CostumeIconMorph) {
-            myself.currentSprite.wearCostume(null);
-            droppedMorph.perish();
-        } else if (droppedMorph instanceof BlockMorph) {
-            if (hand && hand.grabOrigin.origin instanceof ScriptsMorph) {
-                hand.grabOrigin.origin.clearDropInfo();
-                hand.grabOrigin.origin.lastDroppedBlock = droppedMorph;
-                hand.grabOrigin.origin.recordDrop(hand.grabOrigin);
+    function initPalette (palette) {
+        if (category !== myself.currentCategory) {
+            return;
+        }
+
+        myself.palette = palette;
+
+        myself.palette.isDraggable = false;
+        myself.palette.acceptsDrops = true;
+        myself.palette.enableAutoScrolling = false;
+        myself.palette.contents.acceptsDrops = false;
+
+        myself.palette.reactToDropOf = function (droppedMorph, hand) {
+            if (droppedMorph instanceof DialogBoxMorph) {
+                myself.world().add(droppedMorph);
+            } else if (droppedMorph instanceof Sprite) {
+                myself.removeSprite(droppedMorph);
+            } else if (droppedMorph instanceof SpriteIconMorph) {
+                droppedMorph.destroy();
+                myself.removeSprite(droppedMorph.object);
+            } else if (droppedMorph instanceof CostumeIconMorph) {
+                myself.currentSprite.wearCostume(null);
+                droppedMorph.perish();
+            } else if (droppedMorph instanceof BlockMorph) {
+                if (hand && hand.grabOrigin.origin instanceof ScriptsMorph) {
+                    hand.grabOrigin.origin.clearDropInfo();
+                    hand.grabOrigin.origin.lastDroppedBlock = droppedMorph;
+                    hand.grabOrigin.origin.recordDrop(hand.grabOrigin);
+                }
+                droppedMorph.perish();
+            } else {
+                droppedMorph.perish();
             }
-            droppedMorph.perish();
-        } else {
-            droppedMorph.perish();
-        }
-    };
+        };
 
-    this.palette.contents.reactToDropOf = function (droppedMorph) {
-        // for "undrop" operation
-        if (droppedMorph instanceof BlockMorph) {
-            droppedMorph.destroy();
-        }
-    };
+        myself.palette.contents.reactToDropOf = function (droppedMorph) {
+            // for "undrop" operation
+            if (droppedMorph instanceof BlockMorph) {
+                droppedMorph.destroy();
+            }
+        };
 
-    this.palette.setWidth(this.logo.width());
-    this.add(this.palette);
-    return this.palette;
+        myself.palette.setWidth(myself.logo.width());
+        myself.add(myself.palette);
+        myself.fixLayout('refreshPalette');
+        if (typeof callback === 'function') {
+            callback(myself.palette);
+        }
+    }
 };
 
 IDE_Morph.prototype.createPaletteHandle = function () {
@@ -1526,10 +1541,12 @@ IDE_Morph.prototype.fixLayout = function (situation) {
     }
 
     // palette
-    this.palette.setLeft(this.logo.left());
-    this.palette.setTop(this.categories.bottom());
-    this.palette.setHeight(this.bottom() - this.palette.top());
-    this.palette.setWidth(this.paletteWidth);
+    if (this.palette) {
+        this.palette.setLeft(this.logo.left());
+        this.palette.setTop(this.categories.bottom());
+        this.palette.setHeight(this.bottom() - this.palette.top());
+        this.palette.setWidth(this.paletteWidth);
+    }
 
     if (situation !== 'refreshPalette') {
         maxPaletteWidth = Math.max(
@@ -1697,13 +1714,14 @@ IDE_Morph.prototype.droppedBinary = function (anArrayBuffer, name) {
 // IDE_Morph button actions
 
 IDE_Morph.prototype.refreshPalette = function (shouldIgnorePosition) {
-    var oldTop = this.palette.contents.top();
+    var oldTop = this.palette.contents.top(),
+        myself = this;
 
-    this.createPalette();
-    this.fixLayout('refreshPalette');
-    if (!shouldIgnorePosition) {
-        this.palette.contents.setTop(oldTop);
-    }
+    this.createPalette(false, function (palette) {
+        if (!shouldIgnorePosition) {
+            palette.contents.setTop(oldTop);
+        }
+    });
 };
 
 IDE_Morph.prototype.pressStart = function () {

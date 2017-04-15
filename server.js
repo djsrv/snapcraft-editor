@@ -27,14 +27,16 @@ function Server(settings) {
 
 Server.prototype.init = function (settings) {
     console.log('Initializing server for ' + settings.name + '...');
-    this.name = settings.name;
     this.port = settings.port;
     this.globalVariables = new VariableFrame();
     this.stage = new Stage({
-        name: this.name,
+        name: settings.stageName,
+        uuid: uuid.v4(),
         globals: this.globalVariables,
         server: this
     });
+    console.log('Stage name: ' + this.stage.name);
+    console.log('Stage UUID: ' + this.stage.uuid);
     this.app = null;
     this.server = null;
     this.io = null;
@@ -82,6 +84,7 @@ Server.prototype.onConnection = function (socket) {
     socket.on('stop_all', this.stopAllFromClient.bind(this, socket));
     socket.on('pause_all', this.pauseAllFromClient.bind(this, socket));
     socket.on('resume_all', this.resumeAllFromClient.bind(this, socket));
+    socket.on('request_block_templates', this.requestBlockTemplatesFromClient.bind(this, socket));
 
     this.initIDE(socket);
 };
@@ -134,13 +137,33 @@ Server.prototype.resumeAllFromClient = function (socket, data) {
     this.stage.threads.resumeAll(this.stage);
 };
 
+Server.prototype.requestBlockTemplatesFromClient = function (socket, data) {
+    var templates;
+    console.log(socket.id + ' requested ' + data.category + ' templates for ' + data.objectUUID);
+    if (data.objectUUID === this.stage.uuid) {
+        templates = this.stage.blockTemplatesJSON(data.category);
+    }
+    if (templates) {
+        console.log('Sending ' + data.category + ' templates for ' + data.objectUUID + ' to ' + socket.id);
+        socket.emit('block_templates', {
+            objectUUID: data.objectUUID,
+            category: data.category,
+            templates: templates
+        });
+    } else {
+        console.log('Could not create ' + data.category + ' templates for ' + data.objectUUID);
+    }
+}
+
 /* Server -> Client */
 
 Server.prototype.initIDE = function (socket) {
+    console.log('Initializing IDE for ' + socket.id);
     socket.emit('init_ide', {
-        name: this.name,
-        serverStageSettings: this.stageSettings,
-        serverIsPaused: this.wasPaused
+        stageName: this.stage.name,
+        stageUUID: this.stage.uuid,
+        stageSettings: this.stageSettings,
+        isPaused: this.wasPaused
     });
 };
 
@@ -167,7 +190,7 @@ Server.prototype.updateIsPaused = function () {
 };
 
 var server = new Server({
-    name: 'Overworld',
+    stageName: 'Overworld',
     port: 4747
 });
 server.tick();

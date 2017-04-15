@@ -1714,14 +1714,37 @@ Sprite.prototype.blockTemplates = function (category) {
     return blocks;
 };
 
-Sprite.prototype.palette = function (category) {
+Sprite.prototype.palette = function (category, callback) {
+    var myself = this;
     if (!this.paletteCache[category]) {
-        this.paletteCache[category] = this.freshPalette(category);
+        this.freshPalette(category, function (palette) {
+            myself.paletteCache[category] = palette;
+            callback(palette);
+        });
+    } else {
+        callback(this.paletteCache[category]);
     }
-    return this.paletteCache[category];
 };
 
-Sprite.prototype.freshPalette = function (category) {
+Sprite.prototype.freshPalette = function (category, callback) {
+    var blocks = this.blocksCache[category],
+        myself = this,
+        palette;
+    if (blocks) {
+        palette = freshPaletteWithBlocks(category, blocks);
+        callback(palette);
+    } else {
+        myself.getBlockTemplates(category, function (blocks) {
+            if (this.isCachingPrimitives) {
+                myself.blocksCache[category] = blocks;
+            }
+            palette = myself.freshPaletteWithBlocks(category, blocks);
+            callback(palette);
+        });
+    }
+};
+
+Sprite.prototype.freshPaletteWithBlocks = function (category, blocks) {
     var palette = new ScrollFrameMorph(null, null, this.sliderColor),
         unit = SyntaxElementMorph.prototype.fontSize,
         x = 0,
@@ -1829,17 +1852,8 @@ Sprite.prototype.freshPalette = function (category) {
         return menu;
     };
 
-    // primitives:
-
-    blocks = this.blocksCache[category];
-    if (!blocks) {
-        blocks = myself.blockTemplates(category);
-        if (this.isCachingPrimitives) {
-            myself.blocksCache[category] = blocks;
-        }
-    }
-
     blocks.forEach(function (block) {
+        console.log(block);
         if (block === null) {
             return;
         }
@@ -2960,7 +2974,8 @@ function Stage(settings) {
 }
 
 Stage.prototype.init = function (settings) {
-    this.name = localize(settings.name || world);
+    this.name = localize(settings.name || 'World');
+    this.uuid = settings.uuid;
     this.scripts = new ScriptsMorph(this);
     this.version = Date.now(); // for observers
     this.blocksCache = {}; // not to be serialized (!)
@@ -2984,7 +2999,7 @@ Stage.prototype.init = function (settings) {
         this.activeSounds = []; // do not persist
     } else {
         this.ide = settings.ide;
-        this.serverSettings = settings.serverStageSettings;
+        this.serverSettings = settings.serverSettings;
         this.serverIsPaused = settings.serverIsPaused;
     }
 
@@ -3143,9 +3158,16 @@ Stage.prototype.editScripts = function () {
 
 // Stage block templates
 
-Stage.prototype.blockTemplates = function (category) {
-    var blocks = [], myself = this, varNames, button,
-        cat = category || 'motion', txt,
+Stage.prototype.getBlockTemplates = function (category, callback) {
+    var myself = this;
+    this.ide.client.requestBlockTemplates(this.uuid, category, function (templates) {
+        console.log(templates);
+        callback(myself.processBlockTemplates(templates));
+    });
+};
+
+Stage.prototype.processBlockTemplates = function (blocksJSON) {
+    var blocks = [], myself = this,
         world = this.ide.world;
 
     function block(selector) {
@@ -3164,6 +3186,84 @@ Stage.prototype.blockTemplates = function (category) {
         return newBlock;
     }
 
+    function text(text) {
+        var txt = new TextMorph(localize(text));
+        txt.fontSize = 9;
+        txt.setColor(myself.paletteTextColor);
+        return txt;
+    }
+
+    function button(id) {
+        var button;
+        if (id === 'makeVariable') {
+            button = new PushButtonMorph(
+                null,
+                function () {
+                    new VariableDialogMorph(
+                        null,
+                        addVar,
+                        myself
+                    ).prompt(
+                        'Variable name',
+                        null,
+                        myself.world()
+                    );
+                },
+                'Make a variable'
+            );
+            return button;
+        }
+        if (id === 'deleteVariable') {
+            button = new PushButtonMorph(
+                null,
+                function () {
+                    var menu = new MenuMorph(
+                        myself.deleteVariable,
+                        null,
+                        myself
+                    );
+                    myself.variables.allNames().forEach(function (name) {
+                        menu.addItem(name, name);
+                    });
+                    menu.popUpAtHand(myself.world());
+                },
+                'Delete a variable'
+            );
+            return button;
+        }
+        if (id === 'makeBlock') {
+            button = new PushButtonMorph(
+                null,
+                function () {
+                    var ide = myself.parentThatIsA(IDE_Morph);
+                    new BlockDialogMorph(
+                        null,
+                        function (definition) {
+                            if (definition.spec !== '') {
+                                if (definition.isGlobal) {
+                                    myself.globalBlocks.push(definition);
+                                } else {
+                                    myself.customBlocks.push(definition);
+                                }
+                                ide.flushPaletteCache();
+                                ide.refreshPalette();
+                                new BlockEditorMorph(definition, myself).popUp();
+                            }
+                        },
+                        myself
+                    ).prompt(
+                        'Make a block',
+                        null,
+                        myself.world()
+                    );
+                },
+                'Make a block'
+            );
+            return button;
+        }
+        return null;
+    }
+
     function addVar(pair) {
         if (pair) {
             if (myself.isVariableNameInUse(pair[0])) {
@@ -3177,14 +3277,72 @@ Stage.prototype.blockTemplates = function (category) {
         }
     }
 
+    function process(items) {
+        items.forEach(function (item) {
+            if (typeof item === 'string') {
+                blocks.push(item);
+            } else if (item.type === 'block') {
+                blocks.push(block(item.selector));
+            } else if (item.type === 'variableBlock') {
+                blocks.push(variableBlock(item.varName));
+            } else if (item.type === 'text') {
+                blocks.push(text(item.text));
+            } else if (item.type === 'button') {
+                blocks.push(button(item.id));
+            } else if (item.type === 'devOnly') {
+                if (world.isDevMode) {
+                    process(item.contents);
+                }
+            }
+        });
+    }
+
+    process(blocksJSON);
+    return blocks;
+};
+
+Stage.prototype.blockTemplatesJSON = function (category) {
+    var blocks = [], myself = this, varNames,
+        cat = category || 'motion', devBlocks;
+
+    function block(selector) {
+        return {
+            type: 'block',
+            selector: selector
+        };
+    }
+
+    function variableBlock(varName) {
+        return {
+            type: 'variableBlock',
+            varName: varName
+        };
+    }
+
+    function text(text) {
+        return {
+            type: 'text',
+            text: text
+        };
+    }
+
+    function button(id) {
+        return {
+            type: 'button',
+            id: id
+        };
+    }
+
+    function devOnly(contents) {
+        return {
+            type: 'devOnly',
+            contents: contents
+        };
+    }
+
     if (cat === 'motion') {
 
-        txt = new TextMorph(localize(
-            'Stage selected:\nno motion primitives'
-        ));
-        txt.fontSize = 9;
-        txt.setColor(this.paletteTextColor);
-        blocks.push(txt);
+        blocks.push(text('Stage selected:\nno motion primitives'));
 
     } else if (cat === 'looks') {
 
@@ -3192,20 +3350,15 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (world.isDevMode) {
-            blocks.push('-');
-            txt = new TextMorph(localize(
-                'development mode \ndebugging primitives:'
-            ));
-            txt.fontSize = 9;
-            txt.setColor(this.paletteTextColor);
-            blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('log'));
-            blocks.push(block('alert'));
-            blocks.push('-');
-            blocks.push(block('doScreenshot'));
-        }
+        devBlocks = [];
+        devBlocks.push('-');
+        devBlocks.push(text('development mode \ndebugging primitives:'));
+        devBlocks.push('-');
+        devBlocks.push(block('log'));
+        devBlocks.push(block('alert'));
+        devBlocks.push('-');
+        devBlocks.push(block('doScreenshot'));
+        blocks.push(devOnly(devBlocks));
 
     /////////////////////////////////
 
@@ -3225,17 +3378,12 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (world.isDevMode) {
-            blocks.push('-');
-            txt = new TextMorph(localize(
-                'development mode \ndebugging primitives:'
-            ));
-            txt.fontSize = 9;
-            txt.setColor(this.paletteTextColor);
-            blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('reportSounds'));
-        }
+        devBlocks = [];
+        devBlocks.push('-');
+        devBlocks.push(text('development mode \ndebugging primitives:'));
+        devBlocks.push('-');
+        devBlocks.push(block('reportSounds'));
+        blocks.push(devOnly(devBlocks));
 
     } else if (cat === 'pen') {
 
@@ -3319,21 +3467,15 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (world.isDevMode) {
-
-            blocks.push('-');
-            txt = new TextMorph(localize(
-                'development mode \ndebugging primitives:'
-            ));
-            txt.fontSize = 9;
-            txt.setColor(this.paletteTextColor);
-            blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('reportThreadCount'));
-            blocks.push(block('colorFiltered'));
-            blocks.push(block('reportStackSize'));
-            blocks.push(block('reportFrameCount'));
-        }
+        devBlocks = [];
+        devBlocks.push('-');
+        devBlocks.push(text('development mode \ndebugging primitives:'));
+        devBlocks.push('-');
+        devBlocks.push(block('reportThreadCount'));
+        devBlocks.push(block('colorFiltered'));
+        devBlocks.push(block('reportStackSize'));
+        devBlocks.push(block('reportFrameCount'));
+        blocks.push(devOnly(devBlocks));
 
     /////////////////////////////////
 
@@ -3381,57 +3523,22 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (world.isDevMode) {
-            blocks.push('-');
-            txt = new TextMorph(
-                'development mode \ndebugging primitives:'
-            );
-            txt.fontSize = 9;
-            txt.setColor(this.paletteTextColor);
-            blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('reportTypeOf'));
-            blocks.push(block('reportTextFunction'));
-        }
+        devBlocks = [];
+        devBlocks.push('-');
+        devBlocks.push(text('development mode \ndebugging primitives:'));
+        devBlocks.push('-');
+        devBlocks.push(block('reportTypeOf'));
+        devBlocks.push(block('reportTextFunction'));
+        blocks.push(devOnly(devBlocks));
 
     //////////////////////////////////
 
     } else if (cat === 'variables') {
 
-        button = new PushButtonMorph(
-            null,
-            function () {
-                new VariableDialogMorph(
-                    null,
-                    addVar,
-                    myself
-                ).prompt(
-                    'Variable name',
-                    null,
-                    myself.world()
-                );
-            },
-            'Make a variable'
-        );
-        blocks.push(button);
+        blocks.push(button('makeVariable'));
 
         if (this.variables.allNames().length > 0) {
-            button = new PushButtonMorph(
-                null,
-                function () {
-                    var menu = new MenuMorph(
-                        myself.deleteVariable,
-                        null,
-                        myself
-                    );
-                    myself.variables.allNames().forEach(function (name) {
-                        menu.addItem(name, name);
-                    });
-                    menu.popUpAtHand(myself.world());
-                },
-                'Delete a variable'
-            );
-            blocks.push(button);
+            blocks.push(button('deleteVariable'));
         }
 
         blocks.push('-');
@@ -3466,20 +3573,15 @@ Stage.prototype.blockTemplates = function (category) {
 
     // for debugging: ///////////////
 
-        if (world.isDevMode) {
-            blocks.push('-');
-            txt = new TextMorph(localize(
-                'development mode \ndebugging primitives:'
-            ));
-            txt.fontSize = 9;
-            txt.setColor(this.paletteTextColor);
-            blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('reportMap'));
-            blocks.push('-');
-            blocks.push(block('doForEach'));
-            blocks.push(block('doShowTable'));
-        }
+        devBlocks = [];
+        devBlocks.push('-');
+        devBlocks.push(text('development mode \ndebugging primitives:'));
+        devBlocks.push('-');
+        devBlocks.push(block('reportMap'));
+        devBlocks.push('-');
+        devBlocks.push(block('doForEach'));
+        devBlocks.push(block('doShowTable'));
+        blocks.push(devOnly(devBlocks));
 
     /////////////////////////////////
 
@@ -3494,34 +3596,7 @@ Stage.prototype.blockTemplates = function (category) {
             blocks.push('=');
         }
 
-        button = new PushButtonMorph(
-            null,
-            function () {
-                var ide = myself.parentThatIsA(IDE_Morph);
-                new BlockDialogMorph(
-                    null,
-                    function (definition) {
-                        if (definition.spec !== '') {
-                            if (definition.isGlobal) {
-                                myself.globalBlocks.push(definition);
-                            } else {
-                                myself.customBlocks.push(definition);
-                            }
-                            ide.flushPaletteCache();
-                            ide.refreshPalette();
-                            new BlockEditorMorph(definition, myself).popUp();
-                        }
-                    },
-                    myself
-                ).prompt(
-                    'Make a block',
-                    null,
-                    myself.world()
-                );
-            },
-            'Make a block'
-        );
-        blocks.push(button);
+        blocks.push(button('makeBlock'));
     }
     return blocks;
 };
@@ -3545,6 +3620,7 @@ Stage.prototype.paletteColor = Sprite.prototype.paletteColor;
 Stage.prototype.setName = Sprite.prototype.setName;
 Stage.prototype.palette = Sprite.prototype.palette;
 Stage.prototype.freshPalette = Sprite.prototype.freshPalette;
+Stage.prototype.freshPaletteWithBlocks = Sprite.prototype.freshPaletteWithBlocks;
 Stage.prototype.blocksMatching = Sprite.prototype.blocksMatching;
 Stage.prototype.searchBlocks = Sprite.prototype.searchBlocks;
 Stage.prototype.reporterize = Sprite.prototype.reporterize;

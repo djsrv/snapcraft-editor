@@ -78,3 +78,20 @@ Client.prototype.pauseAll = function () {
 Client.prototype.resumeAll = function () {
     this.socket.emit('resume_all');
 };
+
+Client.prototype.requestBlockTemplates = function (objectUUID, category, callback) {
+    var myself = this;
+
+    function blockTemplatesReceived (data) {
+        if (data.objectUUID === objectUUID && data.category === category) {
+            myself.socket.removeListener('block_templates', blockTemplatesReceived);
+            callback(data.templates);
+        }
+    }
+
+    this.socket.on('block_templates', blockTemplatesReceived);
+    this.socket.emit('request_block_templates', {
+        objectUUID: objectUUID,
+        category: category
+    });
+};
