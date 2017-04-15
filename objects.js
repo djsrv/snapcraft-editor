@@ -1853,7 +1853,6 @@ Sprite.prototype.freshPaletteWithBlocks = function (category, blocks) {
     };
 
     blocks.forEach(function (block) {
-        console.log(block);
         if (block === null) {
             return;
         }
@@ -3161,7 +3160,6 @@ Stage.prototype.editScripts = function () {
 Stage.prototype.getBlockTemplates = function (category, callback) {
     var myself = this;
     this.ide.client.requestBlockTemplates(this.uuid, category, function (templates) {
-        console.log(templates);
         callback(myself.processBlockTemplates(templates));
     });
 };
