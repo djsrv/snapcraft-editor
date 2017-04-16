@@ -26,7 +26,7 @@ function Server(settings) {
 }
 
 Server.prototype.init = function (settings) {
-    console.log('Initializing server for ' + settings.name + '...');
+    console.log('Initializing server for ' + settings.stageName + '...');
     this.port = settings.port;
     this.globalVariables = new VariableFrame();
     this.stage = new Stage({
