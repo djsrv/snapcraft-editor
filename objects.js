@@ -1344,23 +1344,6 @@ Sprite.prototype.blockTemplates = function (category) {
         blocks.push(block('show'));
         blocks.push(block('hide'));
 
-    // for debugging: ///////////////
-
-        if (world.isDevMode) {
-            blocks.push('-');
-            txt = new TextMorph(localize(
-                'development mode \ndebugging primitives:'
-            ));
-            txt.fontSize = 9;
-            txt.setColor(this.paletteTextColor);
-            blocks.push(txt);
-            blocks.push('-');
-            blocks.push(block('log'));
-            blocks.push(block('alert'));
-            blocks.push('-');
-            blocks.push(block('doScreenshot'));
-        }
-
     /////////////////////////////////
 
     } else if (cat === 'sound') {
@@ -3181,7 +3164,7 @@ Stage.prototype.blockTemplates_Client = function (category, callback) {
 
 Stage.prototype.processBlockTemplates = function (blocksJSON) {
     var blocks = [], myself = this,
-        world = this.ide.world;
+        world = this.ide.world();
 
     function block(selector) {
         if (myself.hiddenPrimitives[selector]) {
@@ -3351,18 +3334,6 @@ Stage.prototype.blockTemplates_Server = function (category) {
     } else if (cat === 'looks') {
 
         blocks.push(block('chat'));
-
-    // for debugging: ///////////////
-
-        devBlocks = [];
-        devBlocks.push('-');
-        devBlocks.push(text('development mode \ndebugging primitives:'));
-        devBlocks.push('-');
-        devBlocks.push(block('log'));
-        devBlocks.push(block('alert'));
-        devBlocks.push('-');
-        devBlocks.push(block('doScreenshot'));
-        blocks.push(devOnly(devBlocks));
 
     /////////////////////////////////
 
